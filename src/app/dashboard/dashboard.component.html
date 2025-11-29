@@ -1,0 +1,235 @@
+<div class="dashboard-wrapper">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Control de Pagos</h2>
+      <p class="user-email">{{ userEmail }}</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a (click)="navegarA('/dashboard')" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a (click)="navegarA('/pagos')" class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span class="nav-text">Todos los Pagos</span>
+      </a>
+      <a (click)="navegarA('/pago/nuevo')" class="nav-item">
+        <span class="nav-icon">➕</span>
+        <span class="nav-text">Nuevo Pago</span>
+      </a>
+      <a (click)="navegarA('/categorias')" class="nav-item">
+        <span class="nav-icon">🏷️</span>
+        <span class="nav-text">Categorías</span>
+      </a>
+      <a (click)="navegarA('/estadisticas')" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Estadísticas</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button (click)="logout()" class="btn-logout">
+        <span>🚪</span> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div>
+        <h1>Panel Principal</h1>
+        <p>Resumen general de tus pagos</p>
+      </div>
+      <button (click)="navegarA('/pago/nuevo')" class="btn-primary">
+        ➕ Nuevo Pago
+      </button>
+    </header>
+
+    <!-- Statistics Cards -->
+    <section class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-content">
+          <div class="stat-label">Total de Pagos</div>
+          <div class="stat-value">{{ totalPagos }}</div>
+          <div class="stat-change">📊 Registros totales</div>
+        </div>
+        <div class="stat-icon">📋</div>
+      </div>
+
+      <div class="stat-card green">
+        <div class="stat-content">
+          <div class="stat-label">Pagos Completados</div>
+          <div class="stat-value">{{ pagosPagados }}</div>
+          <div class="stat-change">✅ Al día</div>
+        </div>
+        <div class="stat-icon">✓</div>
+      </div>
+
+      <div class="stat-card orange">
+        <div class="stat-content">
+          <div class="stat-label">Pagos Pendientes</div>
+          <div class="stat-value">{{ pagosPendientes }}</div>
+          <div class="stat-change">⏳ Por pagar</div>
+        </div>
+        <div class="stat-icon">⏰</div>
+      </div>
+
+      <div class="stat-card purple">
+        <div class="stat-content">
+          <div class="stat-label">Monto Total</div>
+          <div class="stat-value">${{ montoTotal.toFixed(2) }}</div>
+          <div class="stat-change">💵 Acumulado</div>
+        </div>
+        <div class="stat-icon">💰</div>
+      </div>
+    </section>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Recent Payments -->
+      <section class="card card-recent-payments">
+        <div class="card-header">
+          <div class="header-title">
+            <span class="header-icon">📋</span>
+            <h2>Pagos Recientes</h2>
+          </div>
+          <button (click)="navegarA('/pagos')" class="btn-link">Ver todos →</button>
+        </div>
+        <div class="card-body payments-body">
+          <div *ngIf="ultimosPagos.length === 0" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No hay pagos registrados</p>
+            <button (click)="navegarA('/pago/nuevo')" class="btn-secondary">
+              Crear primer pago
+            </button>
+          </div>
+
+          <div class="table-container" *ngIf="ultimosPagos.length > 0">
+            <table class="payments-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Fecha</th>
+                  <th>Monto</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pago of ultimosPagos" 
+                    class="table-row" 
+                    (click)="verDetalle(pago.id)">
+                  <td>
+                    <div class="payment-name">{{ pago.nombre }}</div>
+                    <div class="payment-desc" *ngIf="pago.descripcion">{{ pago.descripcion }}</div>
+                  </td>
+                  <td class="date-cell">{{ pago.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td class="amount-cell">${{ pago.monto.toFixed(2) }}</td>
+                  <td>
+                    <span class="badge" [class.badge-success]="pago.pagado" [class.badge-warning]="!pago.pagado">
+                      <span class="badge-dot"></span>
+                      {{ pago.pagado ? 'Pagado' : 'Pendiente' }}
+                    </span>
+                  </td>
+                  <td class="action-cell">
+                    <span class="arrow-icon">→</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="card">
+        <div class="card-header">
+          <div class="header-title">
+            <span class="header-icon">⚡</span>
+            <h2>Acciones Rápidas</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="quick-actions">
+            <button (click)="navegarA('/pago/nuevo')" class="action-btn primary">
+              <span class="action-icon">➕</span>
+              <div class="action-content">
+                <div class="action-title">Nuevo Pago</div>
+                <div class="action-desc">Registra un pago</div>
+              </div>
+            </button>
+
+            <button (click)="navegarA('/pagos')" class="action-btn secondary">
+              <span class="action-icon">📝</span>
+              <div class="action-content">
+                <div class="action-title">Ver Pagos</div>
+                <div class="action-desc">Lista completa</div>
+              </div>
+            </button>
+
+            <button (click)="navegarA('/categorias')" class="action-btn tertiary">
+              <span class="action-icon">🏷️</span>
+              <div class="action-content">
+                <div class="action-title">Categorías</div>
+                <div class="action-desc">Administrar</div>
+              </div>
+            </button>
+
+            <button (click)="navegarA('/estadisticas')" class="action-btn quaternary">
+              <span class="action-icon">📊</span>
+              <div class="action-content">
+                <div class="action-title">Estadísticas</div>
+                <div class="action-desc">Ver reportes</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Summary by Category -->
+    <section class="card card-categories">
+      <div class="card-header">
+        <div class="header-title">
+          <span class="header-icon">📊</span>
+          <h2>Resumen por Categoría</h2>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="categoriasSummary.length === 0" class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>No hay datos para mostrar</p>
+        </div>
+        <div class="categories-grid" *ngIf="categoriasSummary.length > 0">
+          <div *ngFor="let cat of categoriasSummary" class="category-card">
+            <div class="category-header">
+              <div class="category-color" [style.background-color]="cat.color || '#667eea'"></div>
+              <h3 class="category-title">{{ cat.nombre }}</h3>
+            </div>
+            <div class="category-body">
+              <div class="category-stat">
+                <span class="stat-label">Total</span>
+                <span class="stat-value primary">${{ cat.total.toFixed(2) }}</span>
+              </div>
+              <div class="category-stat">
+                <span class="stat-label">Pagos</span>
+                <span class="stat-value secondary">{{ cat.cantidad }}</span>
+              </div>
+            </div>
+            <div class="category-footer">
+              <div class="progress-bar">
+                <div class="progress-fill" 
+                     [style.width.%]="getPercentage(cat.total)"
+                     [style.background-color]="cat.color || '#667eea'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

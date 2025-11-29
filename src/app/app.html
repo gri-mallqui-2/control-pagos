@@ -1,0 +1,231 @@
+<div class="container">
+  <div class="max-w">
+    <!-- Header -->
+    <div class="header-card">
+      <h1 class="title">Control de Pagos</h1>
+      <p class="subtitle">Gestiona y organiza tus pagos de forma eficiente</p>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-content">
+          <div>
+            <p class="stat-label">Total Pagos</p>
+            <p class="stat-value">{{ calculateStats().cantidad }}</p>
+          </div>
+          <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card stat-purple">
+        <div class="stat-content">
+          <div>
+            <p class="stat-label">Total General</p>
+            <p class="stat-value">${{ calculateStats().total.toFixed(2) }}</p>
+          </div>
+          <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card stat-green">
+        <div class="stat-content">
+          <div>
+            <p class="stat-label">Pagados</p>
+            <p class="stat-value">${{ calculateStats().pagados.toFixed(2) }}</p>
+          </div>
+          <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card stat-yellow">
+        <div class="stat-content">
+          <div>
+            <p class="stat-label">Pendientes</p>
+            <p class="stat-value">${{ calculateStats().pendientes.toFixed(2) }}</p>
+          </div>
+          <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="filters-card">
+      <div class="filters-content">
+        <div class="search-box">
+          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Buscar por nombre o descripción..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            class="search-input"
+          />
+        </div>
+        
+        <div class="filter-box">
+          <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          <select
+            [(ngModel)]="filterCategory"
+            (ngModelChange)="onFilterChange()"
+            class="filter-select"
+          >
+            <option value="all">Todas las categorías</option>
+            <option *ngFor="let cat of categories" [value]="cat">
+              {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+            </option>
+          </select>
+        </div>
+
+        <button (click)="openModal()" class="btn-primary">
+          <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nuevo Pago
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla de pagos -->
+    <div class="table-card">
+      <div class="table-container">
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Categoría</th>
+              <th>Estado</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredPayments.length === 0">
+              <td colspan="7" class="empty-row">No hay pagos registrados</td>
+            </tr>
+            <tr *ngFor="let payment of filteredPayments" class="table-row">
+              <td class="td-name">{{ payment.nombre }}</td>
+              <td class="td-amount">${{ payment.monto.toFixed(2) }}</td>
+              <td class="td-date">{{ payment.fecha }}</td>
+              <td>
+                <span class="badge badge-category">{{ payment.categoria }}</span>
+              </td>
+              <td>
+                <span [class]="'badge badge-' + payment.estado">{{ payment.estado }}</span>
+              </td>
+              <td class="td-description">{{ payment.descripcion }}</td>
+              <td>
+                <div class="actions">
+                  <button (click)="handleEdit(payment)" class="btn-edit" title="Editar">
+                    <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button (click)="handleDelete(payment.id)" class="btn-delete" title="Eliminar">
+                    <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="isModalOpen" class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">{{ editingPayment ? 'Editar Pago' : 'Nuevo Pago' }}</h2>
+        
+        <div class="form-container">
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.nombre"
+              class="form-input"
+              placeholder="Ej: Pago de luz"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Monto *</label>
+              <input
+                type="number"
+                [(ngModel)]="formData.monto"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Fecha *</label>
+              <input
+                type="date"
+                [(ngModel)]="formData.fecha"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Categoría</label>
+              <select [(ngModel)]="formData.categoria" class="form-input">
+                <option *ngFor="let cat of categories" [value]="cat">
+                  {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Estado</label>
+              <select [(ngModel)]="formData.estado" class="form-input">
+                <option *ngFor="let estado of estados" [value]="estado">
+                  {{ estado.charAt(0).toUpperCase() + estado.slice(1) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea
+              [(ngModel)]="formData.descripcion"
+              rows="3"
+              class="form-input"
+              placeholder="Añade detalles adicionales..."
+            ></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button (click)="handleSubmit()" class="btn-submit">
+              {{ editingPayment ? 'Actualizar' : 'Guardar' }}
+            </button>
+            <button (click)="closeModal()" class="btn-cancel">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

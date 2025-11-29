@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -9,11 +10,24 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
+
   email: string = '';
   password: string = '';
 
+  constructor(private router: Router) {}
+
   login() {
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
+    if (this.email === '' || this.password === '') {
+      alert('Completa todos los campos');
+      return;
+    }
+
+    alert('Inicio de sesión exitoso');
+    this.router.navigate(['/dashboard']); // ← Cambiado a dashboard
+  }
+
+  // ✅ Método que faltaba
+  goRegister() {
+    this.router.navigate(['/register']);
   }
 }

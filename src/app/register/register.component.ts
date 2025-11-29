@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -9,10 +10,19 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
+
   regEmail: string = '';
   regPassword: string = '';
 
+  constructor(private router: Router) {}
+
   register() {
-    console.log('Registrando:', this.regEmail);
+    if (this.regEmail === '' || this.regPassword === '') {
+      alert('Completa todos los campos');
+      return;
+    }
+
+    alert('Cuenta creada exitosamente');
+    this.router.navigate(['/login']);
   }
 }
