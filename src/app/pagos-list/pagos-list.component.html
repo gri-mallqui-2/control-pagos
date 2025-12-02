@@ -1,1 +1,222 @@
-<p>pagos-list works!</p>
+<div class="pagos-wrapper">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Control de Pagos</h2>
+      <p class="user-email">{{ userEmail }}</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a (click)="navegarA('/dashboard')" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a (click)="navegarA('/pagos')" class="nav-item active">
+        <span class="nav-icon">📝</span>
+        <span class="nav-text">Todos los Pagos</span>
+      </a>
+      <a (click)="navegarA('/pago/nuevo')" class="nav-item">
+        <span class="nav-icon">➕</span>
+        <span class="nav-text">Nuevo Pago</span>
+      </a>
+      <a (click)="navegarA('/categorias')" class="nav-item">
+        <span class="nav-icon">🏷️</span>
+        <span class="nav-text">Categorías</span>
+      </a>
+      <a (click)="navegarA('/estadisticas')" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Estadísticas</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button (click)="logout()" class="btn-logout">
+        <span>🚪</span> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div>
+        <h1>Gestión de Pagos</h1>
+        <p>Administra todos tus pagos y transacciones</p>
+      </div>
+      <button (click)="navegarA('/pago/nuevo')" class="btn-primary">
+        ➕ Nuevo Pago
+      </button>
+    </header>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+      <div class="filter-group">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="terminoBusqueda"
+            (ngModelChange)="filtrarPagos()"
+            placeholder="Buscar por nombre o descripción..."
+            class="search-input"
+          >
+        </div>
+
+        <select 
+          [(ngModel)]="categoriaFiltro"
+          (ngModelChange)="filtrarPagos()"
+          class="filter-select"
+        >
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">
+            {{ cat.nombre }}
+          </option>
+        </select>
+
+        <select 
+          [(ngModel)]="estadoFiltro"
+          (ngModelChange)="filtrarPagos()"
+          class="filter-select"
+        >
+          <option value="">Todos los estados</option>
+          <option value="pagado">Pagados</option>
+          <option value="pendiente">Pendientes</option>
+        </select>
+
+        <button (click)="limpiarFiltros()" class="btn-secondary">
+          🔄 Limpiar filtros
+        </button>
+      </div>
+
+      <div class="results-info">
+        <span>Mostrando {{ pagosFiltrados.length }} de {{ pagos.length }} pagos</span>
+      </div>
+    </section>
+
+    <!-- Payments Table -->
+    <section class="card">
+      <div class="card-body no-padding">
+        <div *ngIf="pagosFiltrados.length === 0" class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h3>No hay pagos para mostrar</h3>
+          <p>Crea tu primer pago o ajusta los filtros de búsqueda</p>
+          <button (click)="navegarA('/pago/nuevo')" class="btn-primary">
+            Crear primer pago
+          </button>
+        </div>
+
+        <div class="table-container" *ngIf="pagosFiltrados.length > 0">
+          <table class="payments-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pago of pagosFiltrados" class="table-row">
+                <td>
+                  <div class="payment-name-cell">
+                    <div class="payment-title">{{ pago.nombre }}</div>
+                    <div class="payment-subtitle" *ngIf="pago.descripcion">
+                      {{ pago.descripcion }}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="category-badge" [style.background-color]="getCategoriaColor(pago.categoriaId)">
+                    {{ getNombreCategoria(pago.categoriaId) }}
+                  </span>
+                </td>
+                <td class="date-cell">
+                  {{ pago.fecha | date:'dd/MM/yyyy' }}
+                </td>
+                <td class="amount-cell">
+                  ${{ pago.monto.toFixed(2) }}
+                </td>
+                <td>
+                  <span class="status-badge" [class.status-paid]="pago.pagado" [class.status-pending]="!pago.pagado">
+                    <span class="status-dot"></span>
+                    {{ pago.pagado ? 'Pagado' : 'Pendiente' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button 
+                      (click)="verDetalle(pago.id)" 
+                      class="btn-action view"
+                      title="Ver detalle"
+                    >
+                      👁️
+                    </button>
+                    <button 
+                      (click)="editarPago(pago.id)" 
+                      class="btn-action edit"
+                      title="Editar"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      (click)="toggleEstado(pago)" 
+                      class="btn-action toggle"
+                      [title]="pago.pagado ? 'Marcar como pendiente' : 'Marcar como pagado'"
+                    >
+                      {{ pago.pagado ? '↩️' : '✓' }}
+                    </button>
+                    <button 
+                      (click)="eliminarPago(pago.id)" 
+                      class="btn-action delete"
+                      title="Eliminar"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary Cards -->
+    <section class="summary-grid">
+      <div class="summary-card blue">
+        <div class="summary-icon">📊</div>
+        <div class="summary-content">
+          <div class="summary-label">Total de Pagos</div>
+          <div class="summary-value">{{ pagos.length }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card green">
+        <div class="summary-icon">✓</div>
+        <div class="summary-content">
+          <div class="summary-label">Pagados</div>
+          <div class="summary-value">{{ getPagosPagados() }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card orange">
+        <div class="summary-icon">⏳</div>
+        <div class="summary-content">
+          <div class="summary-label">Pendientes</div>
+          <div class="summary-value">{{ getPagosPendientes() }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card purple">
+        <div class="summary-icon">💰</div>
+        <div class="summary-content">
+          <div class="summary-label">Total Acumulado</div>
+          <div class="summary-value">${{ getMontoTotal().toFixed(2) }}</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

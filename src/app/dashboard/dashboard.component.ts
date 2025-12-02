@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { PagosService, Pago } from '../services/pagos.service';
 import { CategoriasService, Categoria } from '../services/categorias.service';
 
@@ -14,7 +14,7 @@ interface CategoriaSummary {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -59,7 +59,7 @@ export class DashboardComponent implements OnInit {
       // Obtener últimos 5 pagos
       this.ultimosPagos = this.pagos
         .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-        .slice(0, 5);
+        .slice(0, 6);
       
       // Calcular resumen por categoría
       this.calcularResumenCategorias();
@@ -106,8 +106,9 @@ export class DashboardComponent implements OnInit {
     return (monto / this.montoTotal) * 100;
   }
 
-  navegarA(ruta: string) {
-    this.router.navigate([ruta]);
+  getInitials(): string {
+    const email = this.userEmail;
+    return email.charAt(0).toUpperCase();
   }
 
   verDetalle(id: number) {
@@ -115,7 +116,7 @@ export class DashboardComponent implements OnInit {
   }
 
   logout() {
-    if (confirm('¿Estás seguro de cerrar sesión?')) {
+    if (confirm('¿Estás segura de cerrar sesión?')) {
       localStorage.removeItem('token');
       localStorage.removeItem('userEmail');
       this.router.navigate(['/login']);

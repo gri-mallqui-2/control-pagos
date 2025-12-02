@@ -1,57 +1,83 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/pago-detail/pago-detail.component.ts
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
-import { PagosService, Pago } from '../services/pagos.service';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PagoService, Pago } from '../services/pago.service';
 
 @Component({
   selector: 'app-pago-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './pago-detail.component.html',
-  styleUrls: ['./pago-detail.component.css']
+  styleUrl: './pago-detail.component.css'
 })
 export class PagoDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private pagoService = inject(PagoService);
+  
   pago: Pago | null = null;
+  loading = true;
+  userEmail = '';
 
-  constructor(
-    private pagosService: PagosService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
-
-  async ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      try {
-        const id = parseInt(idParam, 10);
-        const pagoEncontrado = await this.pagosService.obtenerPorId(id);
-        this.pago = pagoEncontrado || null;
-      } catch (error) {
-        console.error('Error al cargar pago:', error);
-      }
+  ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    this.userEmail = user?.email || '';
+    
+    const pagoId = this.route.snapshot.paramMap.get('id');
+    if (pagoId) {
+      this.loadPago(pagoId);
+    } else {
+      this.router.navigate(['/pagos-list']);
     }
   }
 
-  async eliminar() {
-    if (!this.pago) return;
+  loadPago(id: string) {
+    this.loading = true;
+    
+    // Obtener todos los pagos y buscar el específico
+    const unsubscribe = this.pagoService.getPagosRealtime((pagos) => {
+      this.pago = pagos.find(p => p.id === id) || null;
+      this.loading = false;
+      
+      if (!this.pago) {
+        this.router.navigate(['/pagos-list']);
+      }
+    });
+  }
 
-    if (confirm('¿Estás seguro de eliminar este pago?')) {
+  editPago() {
+    if (this.pago?.id) {
+      this.router.navigate(['/pago-form', this.pago.id]);
+    }
+  }
+
+  async deletePago() {
+    if (!this.pago?.id) return;
+    
+    if (confirm(`¿Estás seguro de eliminar "${this.pago.nombre}"?`)) {
       try {
-        await this.pagosService.eliminar(this.pago.id);
-        this.router.navigate(['/pagos']);
+        await this.pagoService.deletePago(this.pago.id);
+        this.router.navigate(['/pagos-list']);
       } catch (error) {
         console.error('Error al eliminar:', error);
+        alert('Error al eliminar el pago');
       }
     }
   }
 
-  editar() {
-    if (this.pago) {
-      this.router.navigate(['/pago/editar', this.pago.id]);
+  getEstadoClass(estado: string): string {
+    switch (estado) {
+      case 'Pagado': return 'estado-pagado';
+      case 'Pendiente': return 'estado-pendiente';
+      case 'Vencido': return 'estado-vencido';
+      default: return '';
     }
   }
 
-  volver() {
-    this.router.navigate(['/pagos']);
+  async logout() {
+    await this.authService.logout();
   }
 }

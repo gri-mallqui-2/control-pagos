@@ -13,11 +13,15 @@ import { CategoriasService, Categoria } from '../services/categorias.service';
   styleUrls: ['./pagos-list.component.css']
 })
 export class PagosListComponent implements OnInit {
+  userEmail: string = '';
   pagos: Pago[] = [];
   pagosFiltrados: Pago[] = [];
   categorias: Categoria[] = [];
+  
+  // Filtros
   terminoBusqueda: string = '';
   categoriaFiltro: string = '';
+  estadoFiltro: string = '';
 
   constructor(
     private pagosService: PagosService,
@@ -26,6 +30,7 @@ export class PagosListComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.userEmail = localStorage.getItem('userEmail') || 'Usuario';
     await this.cargarDatos();
   }
 
@@ -42,7 +47,7 @@ export class PagosListComponent implements OnInit {
   }
 
   filtrarPagos() {
-    let resultado = this.pagos;
+    let resultado = [...this.pagos];
 
     // Filtro por búsqueda
     if (this.terminoBusqueda) {
@@ -58,17 +63,43 @@ export class PagosListComponent implements OnInit {
       resultado = resultado.filter(p => p.categoriaId === parseInt(this.categoriaFiltro));
     }
 
+    // Filtro por estado
+    if (this.estadoFiltro === 'pagado') {
+      resultado = resultado.filter(p => p.pagado);
+    } else if (this.estadoFiltro === 'pendiente') {
+      resultado = resultado.filter(p => !p.pagado);
+    }
+
     this.pagosFiltrados = resultado;
   }
 
+  limpiarFiltros() {
+    this.terminoBusqueda = '';
+    this.categoriaFiltro = '';
+    this.estadoFiltro = '';
+    this.filtrarPagos();
+  }
+
   async eliminarPago(pagoId: number) {
-    if (confirm('¿Estás seguro de eliminar este pago?')) {
+    if (confirm('¿Estás seguro de eliminar este pago? Esta acción no se puede deshacer.')) {
       try {
         await this.pagosService.eliminar(pagoId);
         await this.cargarDatos();
+        alert('Pago eliminado exitosamente');
       } catch (error) {
         console.error('Error al eliminar:', error);
+        alert('Error al eliminar el pago');
       }
+    }
+  }
+
+  async toggleEstado(pago: Pago) {
+    try {
+      await this.pagosService.actualizar(pago.id, { pagado: !pago.pagado });
+      await this.cargarDatos();
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      alert('Error al actualizar el estado');
     }
   }
 
@@ -80,12 +111,38 @@ export class PagosListComponent implements OnInit {
     this.router.navigate(['/pago/editar', id]);
   }
 
-  nuevoPago() {
-    this.router.navigate(['/pago/nuevo']);
+  navegarA(ruta: string) {
+    this.router.navigate([ruta]);
   }
 
+  logout() {
+    if (confirm('¿Estás seguro de cerrar sesión?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userEmail');
+      this.router.navigate(['/login']);
+    }
+  }
+
+  // Helpers
   getNombreCategoria(categoriaId: number): string {
     const categoria = this.categorias.find(c => c.id === categoriaId);
     return categoria ? categoria.nombre : 'Sin categoría';
+  }
+
+  getCategoriaColor(categoriaId: number): string {
+    const categoria = this.categorias.find(c => c.id === categoriaId);
+    return categoria?.color || '#667eea';
+  }
+
+  getPagosPagados(): number {
+    return this.pagos.filter(p => p.pagado).length;
+  }
+
+  getPagosPendientes(): number {
+    return this.pagos.filter(p => !p.pagado).length;
+  }
+
+  getMontoTotal(): number {
+    return this.pagos.reduce((sum, p) => sum + p.monto, 0);
   }
 }
