@@ -1,1 +1,91 @@
-<p>pago-detail works!</p>
+<div class="dashboard">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h2>Control de Pagos</h2>
+    </div>
+    <div class="navbar-user">
+      <span>{{ userEmail }}</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <ul class="menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a></li>
+      <li><a routerLink="/pagos" routerLinkActive="active">💰 Pagos</a></li>
+      <li><a routerLink="/categorias" routerLinkActive="active">🏷️ Categorías</a></li>
+      <li><a routerLink="/estadisticas" routerLinkActive="active">📈 Estadísticas</a></li>
+    </ul>
+  </div>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Detalle del Pago</h1>
+      <button class="btn-back" (click)="goBack()">← Volver</button>
+    </div>
+
+    <div *ngIf="loading" class="loading">Cargando...</div>
+
+    <div *ngIf="!loading && pago" class="detail-container">
+      <div class="detail-card">
+        <div class="detail-header">
+          <h2>{{ pago.concepto }}</h2>
+          <span class="pago-estado" [ngClass]="pago.estado">{{ pago.estado }}</span>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-section">
+            <h3>Información General</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Monto:</span>
+                <span class="detail-value monto">S/ {{ pago.monto.toFixed(2) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Categoría:</span>
+                <span class="detail-value">
+                  <span class="categoria-badge">{{ pago.categoria }}</span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Fecha:</span>
+                <span class="detail-value">{{ formatDate(pago.fecha) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Estado:</span>
+                <span class="detail-value">
+                  <span class="estado-text" [ngClass]="pago.estado">{{ pago.estado }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="pago.descripcion">
+            <h3>Descripción</h3>
+            <p class="descripcion-text">{{ pago.descripcion }}</p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Información del Sistema</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Fecha de creación:</span>
+                <span class="detail-value">{{ formatDate(pago.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn-edit" (click)="editPago()">✏️ Editar</button>
+          <button class="btn-delete" (click)="deletePago()">🗑️ Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !pago" class="error-message">
+      <p>No se pudo cargar el pago</p>
+      <button class="btn-back" (click)="goBack()">Volver a la lista</button>
+    </div>
+  </main>
+</div>

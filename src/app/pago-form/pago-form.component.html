@@ -1,1 +1,140 @@
-<p>pago-form works!</p>
+<div class="dashboard">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h2>Control de Pagos</h2>
+    </div>
+    <div class="navbar-user">
+      <span>{{ userEmail }}</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <ul class="menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a></li>
+      <li><a routerLink="/pagos" routerLinkActive="active">💰 Pagos</a></li>
+      <li><a routerLink="/categorias" routerLinkActive="active">🏷️ Categorías</a></li>
+      <li><a routerLink="/estadisticas" routerLinkActive="active">📈 Estadísticas</a></li>
+    </ul>
+  </div>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>{{ isEditMode ? 'Editar Pago' : 'Nuevo Pago' }}</h1>
+      <button class="btn-back" (click)="cancel()">← Volver</button>
+    </div>
+
+    <div class="form-container">
+      <form [formGroup]="pagoForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="concepto">Concepto *</label>
+            <input 
+              type="text" 
+              id="concepto" 
+              formControlName="concepto"
+              class="form-control"
+              [class.is-invalid]="concepto?.invalid && concepto?.touched"
+              placeholder="Ej: Pago de luz"
+            >
+            <div class="error-message" *ngIf="concepto?.invalid && concepto?.touched">
+              <span *ngIf="concepto?.errors?.['required']">El concepto es requerido</span>
+              <span *ngIf="concepto?.errors?.['minlength']">Mínimo 3 caracteres</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="monto">Monto (S/) *</label>
+            <input 
+              type="number" 
+              id="monto" 
+              formControlName="monto"
+              class="form-control"
+              [class.is-invalid]="monto?.invalid && monto?.touched"
+              placeholder="0.00"
+              step="0.01"
+            >
+            <div class="error-message" *ngIf="monto?.invalid && monto?.touched">
+              <span *ngIf="monto?.errors?.['required']">El monto es requerido</span>
+              <span *ngIf="monto?.errors?.['min']">El monto debe ser mayor a 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fecha">Fecha *</label>
+            <input 
+              type="date" 
+              id="fecha" 
+              formControlName="fecha"
+              class="form-control"
+              [class.is-invalid]="fecha?.invalid && fecha?.touched"
+            >
+            <div class="error-message" *ngIf="fecha?.invalid && fecha?.touched">
+              <span *ngIf="fecha?.errors?.['required']">La fecha es requerida</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categoría *</label>
+            <select 
+              id="categoria" 
+              formControlName="categoria"
+              class="form-control"
+              [class.is-invalid]="categoria?.invalid && categoria?.touched"
+            >
+              <option value="">Seleccionar categoría</option>
+              <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+            </select>
+            <div class="error-message" *ngIf="categoria?.invalid && categoria?.touched">
+              <span *ngIf="categoria?.errors?.['required']">La categoría es requerida</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado *</label>
+          <select 
+            id="estado" 
+            formControlName="estado"
+            class="form-control"
+          >
+            <option value="pendiente">Pendiente</option>
+            <option value="pagado">Pagado</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción (Opcional)</label>
+          <textarea 
+            id="descripcion" 
+            formControlName="descripcion"
+            class="form-control"
+            rows="4"
+            placeholder="Detalles adicionales del pago..."
+          ></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn-cancel"
+            (click)="cancel()"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn-submit"
+            [disabled]="pagoForm.invalid || loading"
+          >
+            <span *ngIf="!loading">{{ isEditMode ? 'Actualizar' : 'Guardar' }}</span>
+            <span *ngIf="loading">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>

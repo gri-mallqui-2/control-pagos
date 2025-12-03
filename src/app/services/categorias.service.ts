@@ -1,45 +1,55 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Firestore, collection, collectionData, doc, addDoc, updateDoc, deleteDoc, query, where } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 export interface Categoria {
-  id: number;
+  id?: string;
   nombre: string;
-  descripcion?: string;
-  color?: string;
+  color: string;
+  icono: string;
+  usuarioId: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class CategoriasService {
-  private categorias: Categoria[] = [
-    { id: 1, nombre: 'Alimentación', descripcion: 'Gastos de comida', color: '#667eea' },
-    { id: 2, nombre: 'Transporte', descripcion: 'Gastos de movilidad', color: '#f56565' },
-    { id: 3, nombre: 'Entretenimiento', descripcion: 'Ocio y diversión', color: '#48bb78' }
-  ];
+export class CategoriaService {
+  private firestore = inject(Firestore);
+  private categoriasCollection = collection(this.firestore, 'categorias');
 
-  private nextId = 4;
-
-  async obtenerTodas(): Promise<Categoria[]> {
-    return [...this.categorias];
+  getCategoriasByUser(userId: string): Observable<Categoria[]> {
+    const q = query(
+      this.categoriasCollection,
+      where('usuarioId', '==', userId)
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<Categoria[]>;
   }
 
-  async crear(categoria: Omit<Categoria, 'id'>): Promise<Categoria> {
-    const nueva: Categoria = {
-      id: this.nextId++,
-      ...categoria
-    };
-    this.categorias.push(nueva);
-    return nueva;
+  addCategoria(categoria: Omit<Categoria, 'id'>) {
+    return addDoc(this.categoriasCollection, categoria);
   }
 
-  async actualizar(id: number, categoria: Partial<Categoria>): Promise<void> {
-    const index = this.categorias.findIndex(c => c.id === id);
-    if (index !== -1) {
-      this.categorias[index] = { ...this.categorias[index], ...categoria };
-    }
+  updateCategoria(id: string, categoria: Partial<Categoria>) {
+    const categoriaDoc = doc(this.firestore, `categorias/${id}`);
+    return updateDoc(categoriaDoc, { ...categoria });
   }
 
-  async eliminar(id: number): Promise<void> {
-    this.categorias = this.categorias.filter(c => c.id !== id);
+  deleteCategoria(id: string) {
+    const categoriaDoc = doc(this.firestore, `categorias/${id}`);
+    return deleteDoc(categoriaDoc);
+  }
+
+  // Categorías predeterminadas
+  getCategoriasDefault(): string[] {
+    return [
+      'Servicios',
+      'Alquiler',
+      'Préstamos',
+      'Tarjetas',
+      'Seguros',
+      'Educación',
+      'Salud',
+      'Otros'
+    ];
   }
 }

@@ -1,33 +1,65 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  loginForm!: FormGroup;
+  loading = false;
+  errorMessage = '';
 
-  email: string = '';
-  password: string = '';
+  constructor(
+    private fb: FormBuilder,
+    private router: Router
+  ) {}
 
-  constructor(private router: Router) {}
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
 
-  login() {
-    if (this.email === '' || this.password === '') {
-      alert('Completa todos los campos');
+  // Getters para facilitar el acceso en el template
+  get email() {
+    return this.loginForm.get('email');
+  }
+
+  get password() {
+    return this.loginForm.get('password');
+  }
+
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
       return;
     }
 
-    alert('Inicio de sesión exitoso');
-    this.router.navigate(['/dashboard']); // ← Cambiado a dashboard
-  }
+    this.loading = true;
+    this.errorMessage = '';
 
-  // ✅ Método que faltaba
-  goRegister() {
-    this.router.navigate(['/register']);
+    const { email, password } = this.loginForm.value;
+
+    // Simulación de autenticación (reemplazar con tu servicio real)
+    setTimeout(() => {
+      // Aquí deberías llamar a tu servicio de autenticación
+      // Por ahora, simulamos un login exitoso
+      
+      // Guardar usuario en localStorage (temporal)
+      const userId = 'user_' + Date.now();
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: userId,
+        email: email
+      }));
+
+      this.loading = false;
+      this.router.navigate(['/dashboard']);
+    }, 1000);
   }
 }

@@ -1,24 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, onAuthStateChanged } from '@angular/fire/auth';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private auth = inject(Auth);
+  currentUser: User | null = null;
 
-  private usuarioActual: any = { email: 'test@example.com' };
-
-  constructor() { }
-
-  getCurrentUser() {
-    return this.usuarioActual;
+  constructor() {
+    onAuthStateChanged(this.auth, (user) => {
+      this.currentUser = user;
+    });
   }
 
-  async login(email: string, password: string) {
-    this.usuarioActual = { email };
-    return this.usuarioActual;
+  register(email: string, password: string) {
+    return createUserWithEmailAndPassword(this.auth, email, password);
   }
 
-  async logout() {
-    this.usuarioActual = null;
+  login(email: string, password: string) {
+    return signInWithEmailAndPassword(this.auth, email, password);
+  }
+
+  logout() {
+    return signOut(this.auth);
+  }
+
+  getCurrentUser(): User | null {
+    return this.auth.currentUser;
+  }
+
+  getUserId(): string | null {
+    return this.auth.currentUser?.uid || null;
   }
 }

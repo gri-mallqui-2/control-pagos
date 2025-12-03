@@ -1,1 +1,123 @@
-<p>categorias-list works!</p>
+<div class="dashboard">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h2>Control de Pagos</h2>
+    </div>
+    <div class="navbar-user">
+      <span>{{ userEmail }}</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <ul class="menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a></li>
+      <li><a routerLink="/pagos" routerLinkActive="active">💰 Pagos</a></li>
+      <li><a routerLink="/categorias" routerLinkActive="active">🏷️ Categorías</a></li>
+      <li><a routerLink="/estadisticas" routerLinkActive="active">📈 Estadísticas</a></li>
+    </ul>
+  </div>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Gestión de Categorías</h1>
+      <button class="btn-new" (click)="toggleForm()">
+        {{ showForm ? '✕ Cancelar' : '+ Nueva Categoría' }}
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <div class="form-card" *ngIf="showForm">
+      <h3>{{ editingId ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+      
+      <div class="form-group">
+        <label>Nombre de la Categoría</label>
+        <input 
+          type="text" 
+          [(ngModel)]="nuevaCategoria.nombre"
+          class="form-control"
+          placeholder="Ej: Servicios"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Selecciona un Ícono</label>
+        <div class="iconos-grid">
+          <button 
+            *ngFor="let icono of iconosDisponibles"
+            class="icono-btn"
+            [class.selected]="nuevaCategoria.icono === icono"
+            (click)="selectIcono(icono)"
+          >
+            {{ icono }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Selecciona un Color</label>
+        <div class="colores-grid">
+          <button 
+            *ngFor="let color of coloresDisponibles"
+            class="color-btn"
+            [class.selected]="nuevaCategoria.color === color"
+            [style.background]="color"
+            (click)="selectColor(color)"
+          ></button>
+        </div>
+      </div>
+
+      <div class="preview">
+        <p>Vista previa:</p>
+        <div class="categoria-preview" [style.background]="nuevaCategoria.color">
+          <span class="preview-icono">{{ nuevaCategoria.icono }}</span>
+          <span class="preview-nombre">{{ nuevaCategoria.nombre || 'Categoría' }}</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" (click)="toggleForm()">Cancelar</button>
+        <button class="btn-save" (click)="saveCategoria()">
+          {{ editingId ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">Cargando categorías...</div>
+
+    <!-- Categorías Predeterminadas -->
+    <section class="categorias-section" *ngIf="!loading">
+      <h2>Categorías Predeterminadas</h2>
+      <div class="categorias-grid">
+        <div class="categoria-card default" *ngFor="let cat of categoriasDefault">
+          <span class="categoria-icono">📁</span>
+          <span class="categoria-nombre">{{ cat }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categorías Personalizadas -->
+    <section class="categorias-section" *ngIf="!loading">
+      <h2>Mis Categorías Personalizadas</h2>
+      <div class="categorias-grid" *ngIf="categorias.length > 0">
+        <div 
+          class="categoria-card custom" 
+          *ngFor="let cat of categorias"
+          [style.background]="cat.color"
+        >
+          <div class="categoria-content">
+            <span class="categoria-icono">{{ cat.icono }}</span>
+            <span class="categoria-nombre">{{ cat.nombre }}</span>
+          </div>
+          <div class="categoria-actions">
+            <button class="btn-edit-small" (click)="editCategoria(cat)">✏️</button>
+            <button class="btn-delete-small" (click)="deleteCategoria(cat.id!)">🗑️</button>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="categorias.length === 0" class="no-data">
+        No tienes categorías personalizadas. <button class="link-btn" (click)="toggleForm()">Crear una</button>
+      </p>
+    </section>
+  </main>
+</div>

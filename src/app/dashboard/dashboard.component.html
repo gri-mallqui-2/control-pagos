@@ -1,193 +1,84 @@
-<div class="dashboard-wrapper">
-  <!-- Top Navigation Bar -->
-  <nav class="top-navbar">
+<div class="dashboard">
+  <nav class="navbar">
     <div class="navbar-brand">
-      <span class="brand-icon">✨</span>
-      <h1 class="brand-title">Control de Pagos</h1>
+      <h2>Control de Pagos</h2>
     </div>
     <div class="navbar-user">
-      <div class="user-avatar">{{ getInitials() }}</div>
-      <span class="user-name">{{ userEmail }}</span>
-      <button (click)="logout()" class="btn-logout-icon" title="Cerrar sesión">
-        🚪
-      </button>
+      <span>{{ userEmail }}</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
     </div>
   </nav>
 
-  <!-- Main Container -->
-  <div class="main-container">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="nav-section">
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-label">Dashboard</span>
-        </a>
-        <a routerLink="/pagos" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">📋</span>
-          <span class="nav-label">Mis Pagos</span>
-        </a>
-        <a routerLink="/pago/nuevo" class="nav-link">
-          <span class="nav-icon">✨</span>
-          <span class="nav-label">Nuevo Pago</span>
-        </a>
-        <a routerLink="/categorias" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">🏷️</span>
-          <span class="nav-label">Categorías</span>
-        </a>
-        <a routerLink="/estadisticas" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Estadísticas</span>
-        </a>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="content-area">
-      <!-- Welcome Section -->
-      <section class="welcome-section">
-        <div class="welcome-text">
-          <h2 class="welcome-title">¡Hola! 👋</h2>
-          <p class="welcome-subtitle">Aquí está el resumen de tus pagos</p>
-        </div>
-        <button routerLink="/pago/nuevo" class="btn-primary">
-          <span class="btn-icon">✨</span>
-          Nuevo Pago
-        </button>
-      </section>
-
-      <!-- Statistics Cards -->
-      <section class="stats-container">
-        <div class="stat-card purple">
-          <div class="stat-header">
-            <div class="stat-icon-wrapper purple-bg">
-              <span class="stat-emoji">📋</span>
-            </div>
-            <div class="stat-badge">Total</div>
-          </div>
-          <div class="stat-body">
-            <h3 class="stat-number">{{ totalPagos }}</h3>
-            <p class="stat-label">Pagos registrados</p>
-          </div>
-        </div>
-
-        <div class="stat-card green">
-          <div class="stat-header">
-            <div class="stat-icon-wrapper green-bg">
-              <span class="stat-emoji">✅</span>
-            </div>
-            <div class="stat-badge">Completados</div>
-          </div>
-          <div class="stat-body">
-            <h3 class="stat-number">{{ pagosPagados }}</h3>
-            <p class="stat-label">Pagos al día</p>
-          </div>
-        </div>
-
-        <div class="stat-card pink">
-          <div class="stat-header">
-            <div class="stat-icon-wrapper pink-bg">
-              <span class="stat-emoji">⏰</span>
-            </div>
-            <div class="stat-badge">Pendientes</div>
-          </div>
-          <div class="stat-body">
-            <h3 class="stat-number">{{ pagosPendientes }}</h3>
-            <p class="stat-label">Por pagar</p>
-          </div>
-        </div>
-
-        <div class="stat-card gold">
-          <div class="stat-header">
-            <div class="stat-icon-wrapper gold-bg">
-              <span class="stat-emoji">💰</span>
-            </div>
-            <div class="stat-badge">Total</div>
-          </div>
-          <div class="stat-body">
-            <h3 class="stat-number">${{ montoTotal.toFixed(2) }}</h3>
-            <p class="stat-label">Monto acumulado</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Recent Payments Section -->
-      <section class="section-card">
-        <div class="section-header">
-          <div class="header-left">
-            <span class="section-icon">💫</span>
-            <h3 class="section-title">Pagos Recientes</h3>
-          </div>
-          <a routerLink="/pagos" class="link-button">Ver todos →</a>
-        </div>
-
-        <div class="section-body">
-          <div *ngIf="ultimosPagos.length === 0" class="empty-state">
-            <div class="empty-illustration">📭</div>
-            <h4>No hay pagos aún</h4>
-            <p>¡Comienza registrando tu primer pago!</p>
-            <button routerLink="/pago/nuevo" class="btn-create">
-              Crear primer pago
-            </button>
-          </div>
-
-          <div class="payments-grid" *ngIf="ultimosPagos.length > 0">
-            <div *ngFor="let pago of ultimosPagos" 
-                 class="payment-card"
-                 (click)="verDetalle(pago.id)">
-              <div class="payment-top">
-                <div class="payment-info">
-                  <h4 class="payment-name">{{ pago.nombre }}</h4>
-                  <p class="payment-date">{{ pago.fecha | date:'dd MMM yyyy' }}</p>
-                </div>
-                <span class="status-dot" [class.paid]="pago.pagado" [class.pending]="!pago.pagado"></span>
-              </div>
-              <div class="payment-bottom">
-                <span class="payment-amount">${{ pago.monto.toFixed(2) }}</span>
-                <span class="payment-status" [class.status-paid]="pago.pagado">
-                  {{ pago.pagado ? '✓ Pagado' : '⏳ Pendiente' }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Categories Summary -->
-      <section class="section-card">
-        <div class="section-header">
-          <div class="header-left">
-            <span class="section-icon">🎨</span>
-            <h3 class="section-title">Por Categoría</h3>
-          </div>
-        </div>
-
-        <div class="section-body">
-          <div *ngIf="categoriasSummary.length === 0" class="empty-state-small">
-            <p>No hay datos para mostrar</p>
-          </div>
-
-          <div class="categories-list" *ngIf="categoriasSummary.length > 0">
-            <div *ngFor="let cat of categoriasSummary" class="category-row">
-              <div class="category-left">
-                <div class="category-color-dot" [style.background]="cat.color || '#e879f9'"></div>
-                <div class="category-info">
-                  <h4 class="category-name">{{ cat.nombre }}</h4>
-                  <p class="category-count">{{ cat.cantidad }} {{ cat.cantidad === 1 ? 'pago' : 'pagos' }}</p>
-                </div>
-              </div>
-              <div class="category-right">
-                <span class="category-amount">${{ cat.total.toFixed(2) }}</span>
-                <div class="progress-mini">
-                  <div class="progress-fill-mini" 
-                       [style.width.%]="getPercentage(cat.total)"
-                       [style.background]="cat.color || '#e879f9'"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <div class="sidebar">
+    <ul class="menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a></li>
+      <li><a routerLink="/pagos" routerLinkActive="active">💰 Pagos</a></li>
+      <li><a routerLink="/categorias" routerLinkActive="active">🏷️ Categorías</a></li>
+      <li><a routerLink="/estadisticas" routerLinkActive="active">📈 Estadísticas</a></li>
+    </ul>
   </div>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <a routerLink="/pagos/nuevo" class="btn-new">+ Nuevo Pago</a>
+    </div>
+
+    <div *ngIf="loading" class="loading">Cargando...</div>
+
+    <div *ngIf="!loading" class="dashboard-content">
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <h3>Total Pagos</h3>
+            <p class="stat-number">{{ totalPagos }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card pagado">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <h3>Pagado</h3>
+            <p class="stat-number">S/ {{ totalPagado.toFixed(2) }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card pendiente">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <h3>Pendiente</h3>
+            <p class="stat-number">S/ {{ totalPendiente.toFixed(2) }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card vencido">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-info">
+            <h3>Vencido</h3>
+            <p class="stat-number">S/ {{ totalVencido.toFixed(2) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h2>Pagos Recientes</h2>
+        <div class="pagos-list" *ngIf="getRecentPagos().length > 0">
+          <div class="pago-item" *ngFor="let pago of getRecentPagos()">
+            <div class="pago-info">
+              <h3>{{ pago.concepto }}</h3>
+              <span class="pago-categoria">{{ pago.categoria }}</span>
+            </div>
+            <div class="pago-details">
+              <span class="pago-monto">S/ {{ pago.monto.toFixed(2) }}</span>
+              <span class="pago-estado" [ngClass]="pago.estado">{{ pago.estado }}</span>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="getRecentPagos().length === 0" class="no-data">
+          No hay pagos registrados. <a routerLink="/pagos/nuevo">Crear el primero</a>
+        </p>
+      </div>
+    </div>
+  </main>
 </div>

@@ -1,1 +1,132 @@
-<p>estadisticas works!</p>
+<div class="dashboard">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h2>Control de Pagos</h2>
+    </div>
+    <div class="navbar-user">
+      <span>{{ userEmail }}</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <div class="sidebar">
+    <ul class="menu">
+      <li><a routerLink="/dashboard" routerLinkActive="active">📊 Dashboard</a></li>
+      <li><a routerLink="/pagos" routerLinkActive="active">💰 Pagos</a></li>
+      <li><a routerLink="/categorias" routerLinkActive="active">🏷️ Categorías</a></li>
+      <li><a routerLink="/estadisticas" routerLinkActive="active">📈 Estadísticas</a></li>
+    </ul>
+  </div>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Estadísticas y Análisis</h1>
+    </div>
+
+    <div *ngIf="loading" class="loading">Cargando estadísticas...</div>
+
+    <div *ngIf="!loading" class="stats-container">
+      <!-- Estadísticas Generales -->
+      <section class="stats-section">
+        <h2>Resumen General</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <p class="stat-label">Total de Pagos</p>
+              <p class="stat-value">{{ totalPagos }}</p>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-icon">💵</div>
+            <div class="stat-content">
+              <p class="stat-label">Monto Total</p>
+              <p class="stat-value">S/ {{ totalMonto.toFixed(2) }}</p>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+              <p class="stat-label">Promedio por Pago</p>
+              <p class="stat-value">S/ {{ promedioPago.toFixed(2) }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Estados de Pagos -->
+      <section class="stats-section">
+        <h2>Distribución por Estado</h2>
+        <div class="estados-grid">
+          <div class="estado-card pagado">
+            <h3>✅ Pagados</h3>
+            <p class="estado-number">{{ pagosPagados }}</p>
+            <p class="estado-percentage">{{ totalPagos > 0 ? ((pagosPagados / totalPagos) * 100).toFixed(1) : 0 }}%</p>
+          </div>
+
+          <div class="estado-card pendiente">
+            <h3>⏳ Pendientes</h3>
+            <p class="estado-number">{{ pagosPendientes }}</p>
+            <p class="estado-percentage">{{ totalPagos > 0 ? ((pagosPendientes / totalPagos) * 100).toFixed(1) : 0 }}%</p>
+          </div>
+
+          <div class="estado-card vencido">
+            <h3>⚠️ Vencidos</h3>
+            <p class="estado-number">{{ pagosVencidos }}</p>
+            <p class="estado-percentage">{{ totalPagos > 0 ? ((pagosVencidos / totalPagos) * 100).toFixed(1) : 0 }}%</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Estadísticas por Categoría -->
+      <section class="stats-section">
+        <h2>Análisis por Categoría</h2>
+        <div class="categoria-stats" *ngIf="estadisticasCategorias.length > 0">
+          <div class="categoria-item" *ngFor="let cat of estadisticasCategorias">
+            <div class="categoria-info">
+              <h4>{{ cat.nombre }}</h4>
+              <span class="categoria-cantidad">{{ cat.cantidad }} pagos</span>
+            </div>
+            <div class="categoria-bar-container">
+              <div class="categoria-bar" [style.width.%]="getCategoryPercentage(cat.total)"></div>
+            </div>
+            <div class="categoria-monto">
+              <span>S/ {{ cat.total.toFixed(2) }}</span>
+              <span class="porcentaje">({{ getCategoryPercentage(cat.total).toFixed(1) }}%)</span>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="estadisticasCategorias.length === 0" class="no-data">
+          No hay datos de categorías disponibles
+        </p>
+      </section>
+
+      <!-- Estadísticas Mensuales -->
+      <section class="stats-section">
+        <h2>Tendencia Mensual (Últimos 6 meses)</h2>
+        <div class="monthly-chart" *ngIf="estadisticasMensuales.length > 0">
+          <div class="chart-bars">
+            <div class="chart-bar" *ngFor="let mes of estadisticasMensuales">
+              <div class="bar-container">
+                <div 
+                  class="bar" 
+                  [style.height.%]="getMonthlyBarHeight(mes.total)"
+                  [title]="'S/ ' + mes.total.toFixed(2)"
+                ></div>
+              </div>
+              <div class="bar-label">
+                <p class="mes-nombre">{{ mes.mes }}</p>
+                <p class="mes-monto">S/ {{ mes.total.toFixed(2) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="estadisticasMensuales.length === 0" class="no-data">
+          No hay datos mensuales disponibles
+        </p>
+      </section>
+    </div>
+  </main>
+</div>
