@@ -1,148 +1,128 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { PagosService, Pago } from '../services/pagos.service';
-import { CategoriasService, Categoria } from '../services/categorias.service';
+import { AuthService } from '../services/auth.service';
+import { PagoService, Pago } from '../services/pago.service';
 
 @Component({
   selector: 'app-pagos-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './pagos-list.component.html',
   styleUrls: ['./pagos-list.component.css']
 })
 export class PagosListComponent implements OnInit {
-  userEmail: string = '';
+  private authService = inject(AuthService);
+  private pagoService = inject(PagoService);
+  private router = inject(Router);
+
   pagos: Pago[] = [];
   pagosFiltrados: Pago[] = [];
-  categorias: Categoria[] = [];
-  
+  loading: boolean = true;
+  userEmail: string = '';
+
   // Filtros
-  terminoBusqueda: string = '';
-  categoriaFiltro: string = '';
-  estadoFiltro: string = '';
+  searchTerm: string = '';
+  filterCategoria: string = 'todas';
+  filterEstado: string = 'todos';
+  sortBy: string = 'fecha-desc';
 
-  constructor(
-    private pagosService: PagosService,
-    private categoriasService: CategoriasService,
-    private router: Router
-  ) {}
+  categorias: string[] = [];
 
-  async ngOnInit() {
-    this.userEmail = localStorage.getItem('userEmail') || 'Usuario';
-    await this.cargarDatos();
-  }
-
-  async cargarDatos() {
-    try {
-      [this.pagos, this.categorias] = await Promise.all([
-        this.pagosService.obtenerTodos(),
-        this.categoriasService.obtenerTodas()
-      ]);
-      this.filtrarPagos();
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
+  ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.userEmail = user.email || '';
+      this.loadPagos(user.uid);
     }
   }
 
-  filtrarPagos() {
-    let resultado = [...this.pagos];
+  loadPagos(userId: string) {
+    this.pagoService.getPagosByUser(userId).subscribe(pagos => {
+      this.pagos = pagos;
+      this.extractCategorias();
+      this.applyFilters();
+      this.loading = false;
+    });
+  }
+
+  extractCategorias() {
+    const categoriasSet = new Set(this.pagos.map(p => p.categoria));
+    this.categorias = Array.from(categoriasSet).sort();
+  }
+
+  applyFilters() {
+    let filtered = [...this.pagos];
 
     // Filtro por búsqueda
-    if (this.terminoBusqueda) {
-      const term = this.terminoBusqueda.toLowerCase();
-      resultado = resultado.filter(p =>
-        p.nombre.toLowerCase().includes(term) ||
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.concepto.toLowerCase().includes(term) ||
         p.descripcion?.toLowerCase().includes(term)
       );
     }
 
     // Filtro por categoría
-    if (this.categoriaFiltro) {
-      resultado = resultado.filter(p => p.categoriaId === parseInt(this.categoriaFiltro));
+    if (this.filterCategoria !== 'todas') {
+      filtered = filtered.filter(p => p.categoria === this.filterCategoria);
     }
 
     // Filtro por estado
-    if (this.estadoFiltro === 'pagado') {
-      resultado = resultado.filter(p => p.pagado);
-    } else if (this.estadoFiltro === 'pendiente') {
-      resultado = resultado.filter(p => !p.pagado);
+    if (this.filterEstado !== 'todos') {
+      filtered = filtered.filter(p => p.estado === this.filterEstado);
     }
 
-    this.pagosFiltrados = resultado;
+    // Ordenamiento
+    switch (this.sortBy) {
+      case 'fecha-desc':
+        filtered.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        break;
+      case 'fecha-asc':
+        filtered.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+        break;
+      case 'monto-desc':
+        filtered.sort((a, b) => b.monto - a.monto);
+        break;
+      case 'monto-asc':
+        filtered.sort((a, b) => a.monto - b.monto);
+        break;
+    }
+
+    this.pagosFiltrados = filtered;
   }
 
-  limpiarFiltros() {
-    this.terminoBusqueda = '';
-    this.categoriaFiltro = '';
-    this.estadoFiltro = '';
-    this.filtrarPagos();
+  onSearchChange() {
+    this.applyFilters();
   }
 
-  async eliminarPago(pagoId: number) {
-    if (confirm('¿Estás seguro de eliminar este pago? Esta acción no se puede deshacer.')) {
-      try {
-        await this.pagosService.eliminar(pagoId);
-        await this.cargarDatos();
+  onFilterChange() {
+    this.applyFilters();
+  }
+
+  deletePago(id: string) {
+    if (confirm('¿Estás seguro de eliminar este pago?')) {
+      this.pagoService.deletePago(id).then(() => {
         alert('Pago eliminado exitosamente');
-      } catch (error) {
-        console.error('Error al eliminar:', error);
+      }).catch(error => {
         alert('Error al eliminar el pago');
-      }
+        console.error(error);
+      });
     }
   }
 
-  async toggleEstado(pago: Pago) {
-    try {
-      await this.pagosService.actualizar(pago.id, { pagado: !pago.pagado });
-      await this.cargarDatos();
-    } catch (error) {
-      console.error('Error al cambiar estado:', error);
-      alert('Error al actualizar el estado');
-    }
+  viewDetail(id: string) {
+    this.router.navigate(['/pagos', id]);
   }
 
-  verDetalle(id: number) {
-    this.router.navigate(['/pago', id]);
-  }
-
-  editarPago(id: number) {
-    this.router.navigate(['/pago/editar', id]);
-  }
-
-  navegarA(ruta: string) {
-    this.router.navigate([ruta]);
+  editPago(id: string) {
+    this.router.navigate(['/pagos/editar', id]);
   }
 
   logout() {
-    if (confirm('¿Estás seguro de cerrar sesión?')) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userEmail');
+    this.authService.logout().then(() => {
       this.router.navigate(['/login']);
-    }
-  }
-
-  // Helpers
-  getNombreCategoria(categoriaId: number): string {
-    const categoria = this.categorias.find(c => c.id === categoriaId);
-    return categoria ? categoria.nombre : 'Sin categoría';
-  }
-
-  getCategoriaColor(categoriaId: number): string {
-    const categoria = this.categorias.find(c => c.id === categoriaId);
-    return categoria?.color || '#667eea';
-  }
-
-  getPagosPagados(): number {
-    return this.pagos.filter(p => p.pagado).length;
-  }
-
-  getPagosPendientes(): number {
-    return this.pagos.filter(p => !p.pagado).length;
-  }
-
-  getMontoTotal(): number {
-    return this.pagos.reduce((sum, p) => sum + p.monto, 0);
+    });
   }
 }

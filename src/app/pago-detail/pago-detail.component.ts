@@ -1,83 +1,86 @@
-// src/app/pago-detail/pago-detail.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { PagoService, Pago } from '../services/pago.service';
 
 @Component({
   selector: 'app-pago-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterModule],
   templateUrl: './pago-detail.component.html',
-  styleUrl: './pago-detail.component.css'
+  styleUrls: ['./pago-detail.component.css']
 })
 export class PagoDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private authService = inject(AuthService);
   private pagoService = inject(PagoService);
-  
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   pago: Pago | null = null;
-  loading = true;
-  userEmail = '';
+  loading: boolean = true;
+  userEmail: string = '';
 
   ngOnInit() {
     const user = this.authService.getCurrentUser();
-    this.userEmail = user?.email || '';
-    
-    const pagoId = this.route.snapshot.paramMap.get('id');
-    if (pagoId) {
-      this.loadPago(pagoId);
-    } else {
-      this.router.navigate(['/pagos-list']);
+    if (user) {
+      this.userEmail = user.email || '';
+    }
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadPago(id);
     }
   }
 
   loadPago(id: string) {
-    this.loading = true;
-    
-    // Obtener todos los pagos y buscar el específico
-    const unsubscribe = this.pagoService.getPagosRealtime((pagos) => {
-      this.pago = pagos.find(p => p.id === id) || null;
-      this.loading = false;
-      
-      if (!this.pago) {
-        this.router.navigate(['/pagos-list']);
+    this.pagoService.getPagoById(id).subscribe(
+      pago => {
+        this.pago = pago;
+        this.loading = false;
+      },
+      error => {
+        console.error('Error al cargar el pago:', error);
+        alert('No se pudo cargar el pago');
+        this.router.navigate(['/pagos']);
       }
-    });
+    );
   }
 
   editPago() {
     if (this.pago?.id) {
-      this.router.navigate(['/pago-form', this.pago.id]);
+      this.router.navigate(['/pagos/editar', this.pago.id]);
     }
   }
 
-  async deletePago() {
-    if (!this.pago?.id) return;
-    
-    if (confirm(`¿Estás seguro de eliminar "${this.pago.nombre}"?`)) {
-      try {
-        await this.pagoService.deletePago(this.pago.id);
-        this.router.navigate(['/pagos-list']);
-      } catch (error) {
-        console.error('Error al eliminar:', error);
-        alert('Error al eliminar el pago');
-      }
+  deletePago() {
+    if (this.pago?.id && confirm('¿Estás seguro de eliminar este pago?')) {
+      this.pagoService.deletePago(this.pago.id)
+        .then(() => {
+          alert('Pago eliminado exitosamente');
+          this.router.navigate(['/pagos']);
+        })
+        .catch(error => {
+          alert('Error al eliminar el pago');
+          console.error(error);
+        });
     }
   }
 
-  getEstadoClass(estado: string): string {
-    switch (estado) {
-      case 'Pagado': return 'estado-pagado';
-      case 'Pendiente': return 'estado-pendiente';
-      case 'Vencido': return 'estado-vencido';
-      default: return '';
-    }
+  goBack() {
+    this.router.navigate(['/pagos']);
   }
 
-  async logout() {
-    await this.authService.logout();
+  logout() {
+    this.authService.logout().then(() => {
+      this.router.navigate(['/login']);
+    });
+  }
+
+  formatDate(date: any): string {
+    if (date?.toDate) {
+      return date.toDate().toLocaleDateString('es-PE');
+    }
+    return new Date(date).toLocaleDateString('es-PE');
   }
 }

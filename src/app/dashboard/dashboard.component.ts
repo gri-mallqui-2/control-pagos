@@ -1,125 +1,65 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { PagosService, Pago } from '../services/pagos.service';
-import { CategoriasService, Categoria } from '../services/categorias.service';
-
-interface CategoriaSummary {
-  nombre: string;
-  color?: string;
-  cantidad: number;
-  total: number;
-}
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PagoService, Pago } from '../services/pago.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  userEmail: string = '';
+  private authService = inject(AuthService);
+  private pagoService = inject(PagoService);
+  private router = inject(Router);
+
   pagos: Pago[] = [];
-  ultimosPagos: Pago[] = [];
-  categorias: Categoria[] = [];
-  categoriasSummary: CategoriaSummary[] = [];
-  
-  // Estadísticas
+  userEmail: string = '';
   totalPagos: number = 0;
-  pagosPagados: number = 0;
-  pagosPendientes: number = 0;
-  montoTotal: number = 0;
+  totalPagado: number = 0;
+  totalPendiente: number = 0;
+  totalVencido: number = 0;
+  loading: boolean = true;
 
-  constructor(
-    private router: Router,
-    private pagosService: PagosService,
-    private categoriasService: CategoriasService
-  ) {}
-
-  async ngOnInit() {
-    // Obtener email del usuario
-    this.userEmail = localStorage.getItem('userEmail') || 'Usuario';
-    
-    // Cargar datos
-    await this.cargarDatos();
-  }
-
-  async cargarDatos() {
-    try {
-      // Cargar pagos y categorías en paralelo
-      [this.pagos, this.categorias] = await Promise.all([
-        this.pagosService.obtenerTodos(),
-        this.categoriasService.obtenerTodas()
-      ]);
-      
-      // Calcular estadísticas
-      this.calcularEstadisticas();
-      
-      // Obtener últimos 5 pagos
-      this.ultimosPagos = this.pagos
-        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-        .slice(0, 6);
-      
-      // Calcular resumen por categoría
-      this.calcularResumenCategorias();
-        
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
+  ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.userEmail = user.email || '';
+      this.loadPagos(user.uid);
     }
   }
 
-  calcularEstadisticas() {
-    this.totalPagos = this.pagos.length;
-    this.pagosPagados = this.pagos.filter(p => p.pagado).length;
-    this.pagosPendientes = this.totalPagos - this.pagosPagados;
-    this.montoTotal = this.pagos.reduce((sum, p) => sum + p.monto, 0);
-  }
-
-  calcularResumenCategorias() {
-    const categoriaMap = new Map<number, { total: number; cantidad: number }>();
-
-    // Agrupar pagos por categoría
-    this.pagos.forEach(pago => {
-      const current = categoriaMap.get(pago.categoriaId) || { total: 0, cantidad: 0 };
-      current.total += pago.monto;
-      current.cantidad += 1;
-      categoriaMap.set(pago.categoriaId, current);
+  loadPagos(userId: string) {
+    this.pagoService.getPagosByUser(userId).subscribe(pagos => {
+      this.pagos = pagos;
+      this.calculateStats();
+      this.loading = false;
     });
-
-    // Convertir a array con información de categoría
-    this.categoriasSummary = Array.from(categoriaMap.entries())
-      .map(([categoriaId, data]) => {
-        const categoria = this.categorias.find(c => c.id === categoriaId);
-        return {
-          nombre: categoria?.nombre || 'Sin categoría',
-          color: categoria?.color,
-          cantidad: data.cantidad,
-          total: data.total
-        };
-      })
-      .sort((a, b) => b.total - a.total); // Ordenar por monto descendente
   }
 
-  getPercentage(monto: number): number {
-    if (this.montoTotal === 0) return 0;
-    return (monto / this.montoTotal) * 100;
+  calculateStats() {
+    this.totalPagos = this.pagos.length;
+    this.totalPagado = this.pagos
+      .filter(p => p.estado === 'pagado')
+      .reduce((sum, p) => sum + p.monto, 0);
+    this.totalPendiente = this.pagos
+      .filter(p => p.estado === 'pendiente')
+      .reduce((sum, p) => sum + p.monto, 0);
+    this.totalVencido = this.pagos
+      .filter(p => p.estado === 'vencido')
+      .reduce((sum, p) => sum + p.monto, 0);
   }
 
-  getInitials(): string {
-    const email = this.userEmail;
-    return email.charAt(0).toUpperCase();
-  }
-
-  verDetalle(id: number) {
-    this.router.navigate(['/pago', id]);
+  getRecentPagos() {
+    return this.pagos.slice(0, 5);
   }
 
   logout() {
-    if (confirm('¿Estás segura de cerrar sesión?')) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userEmail');
+    this.authService.logout().then(() => {
       this.router.navigate(['/login']);
-    }
+    });
   }
 }
