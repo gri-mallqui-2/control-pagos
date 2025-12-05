@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
-import { PagoService, Pago } from '../services/pago.service';
+import { PagoService, Pago } from '../services/pagos.service';
+import { CurrencySolPipe } from '../pipes/currency-sol.pipe';
 
 @Component({
   selector: 'app-pagos-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CurrencySolPipe],
   templateUrl: './pagos-list.component.html',
   styleUrls: ['./pagos-list.component.css']
 })
@@ -58,7 +59,7 @@ export class PagosListComponent implements OnInit {
     // Filtro por búsqueda
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.concepto.toLowerCase().includes(term) ||
         p.descripcion?.toLowerCase().includes(term)
       );

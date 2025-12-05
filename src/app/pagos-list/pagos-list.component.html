@@ -78,7 +78,7 @@
             </div>
             <div class="pago-row">
               <span class="label">Monto:</span>
-              <span class="pago-monto">S/ {{ pago.monto.toFixed(2) }}</span>
+              <span class="pago-monto">{{ pago.monto | currencySol }}</span>
             </div>
             <div class="pago-row">
               <span class="label">Fecha:</span>

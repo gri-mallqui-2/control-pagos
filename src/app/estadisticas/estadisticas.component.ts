@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { PagoService, Pago } from '../services/pago.service';
+import { PagoService, Pago } from '../services/pagos.service';
 
 interface EstadisticaCategoria {
   nombre: string;
@@ -41,7 +41,7 @@ export class EstadisticasComponent implements OnInit {
 
   // Estadísticas por categoría
   estadisticasCategorias: EstadisticaCategoria[] = [];
-  
+
   // Estadísticas mensuales
   estadisticasMensuales: EstadisticaMensual[] = [];
 
@@ -66,14 +66,14 @@ export class EstadisticasComponent implements OnInit {
     this.totalPagos = this.pagos.length;
     this.totalMonto = this.pagos.reduce((sum, p) => sum + p.monto, 0);
     this.promedioPago = this.totalPagos > 0 ? this.totalMonto / this.totalPagos : 0;
-    
+
     this.pagosPagados = this.pagos.filter(p => p.estado === 'pagado').length;
     this.pagosPendientes = this.pagos.filter(p => p.estado === 'pendiente').length;
     this.pagosVencidos = this.pagos.filter(p => p.estado === 'vencido').length;
 
     // Por categoría
     this.calculateCategoryStats();
-    
+
     // Por mes
     this.calculateMonthlyStats();
   }

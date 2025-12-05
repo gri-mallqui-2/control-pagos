@@ -1,97 +1,54 @@
-import { Injectable } from '@angular/core';
-import { Observable, from, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 export interface Pago {
-  id: string;
+  id?: string;
   userId: string;
-  descripcion: string;
+  concepto: string;
   monto: number;
-  fecha: Date;
+  fecha: any; // Firestore Timestamp or Date
   categoria: string;
-  tipo: 'ingreso' | 'egreso';
-  metodoPago?: string;
-  notas?: string;
+  estado: 'pendiente' | 'pagado' | 'vencido';
+  descripcion?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class PagoService {
-  private readonly STORAGE_KEY = 'pagos';
-
-  constructor() { }
+  private firestore = inject(Firestore);
+  private pagosCollection = collection(this.firestore, 'pagos');
 
   // Obtener todos los pagos de un usuario
   getPagosByUser(userId: string): Observable<Pago[]> {
-    const pagos = this.getPagosFromStorage();
-    const userPagos = pagos.filter(p => p.userId === userId);
-    return of(userPagos);
+    const q = query(
+      this.pagosCollection,
+      where('userId', '==', userId)
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<Pago[]>;
   }
 
   // Obtener un pago por ID
-  getPagoById(id: string): Observable<Pago | undefined> {
-    const pagos = this.getPagosFromStorage();
-    const pago = pagos.find(p => p.id === id);
-    return of(pago);
+  getPagoById(id: string): Observable<Pago> {
+    const pagoDoc = doc(this.firestore, `pagos/${id}`);
+    return docData(pagoDoc, { idField: 'id' }) as Observable<Pago>;
   }
 
   // Agregar nuevo pago
-  async addPago(pago: Omit<Pago, 'id'>): Promise<Pago> {
-    const pagos = this.getPagosFromStorage();
-    const newPago: Pago = {
-      ...pago,
-      id: this.generateId()
-    };
-    pagos.push(newPago);
-    this.savePagosToStorage(pagos);
-    return newPago;
+  addPago(pago: Omit<Pago, 'id'>) {
+    return addDoc(this.pagosCollection, pago);
   }
 
   // Actualizar pago
-  async updatePago(id: string, pagoData: Partial<Pago>): Promise<Pago | null> {
-    const pagos = this.getPagosFromStorage();
-    const index = pagos.findIndex(p => p.id === id);
-    
-    if (index === -1) {
-      return null;
-    }
-
-    pagos[index] = { ...pagos[index], ...pagoData };
-    this.savePagosToStorage(pagos);
-    return pagos[index];
+  updatePago(id: string, pagoData: Partial<Pago>) {
+    const pagoDoc = doc(this.firestore, `pagos/${id}`);
+    return updateDoc(pagoDoc, { ...pagoData });
   }
 
   // Eliminar pago
-  async deletePago(id: string): Promise<boolean> {
-    const pagos = this.getPagosFromStorage();
-    const filteredPagos = pagos.filter(p => p.id !== id);
-    
-    if (filteredPagos.length === pagos.length) {
-      return false;
-    }
-
-    this.savePagosToStorage(filteredPagos);
-    return true;
-  }
-
-  // Métodos auxiliares privados
-  private getPagosFromStorage(): Pago[] {
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    if (!data) return [];
-    
-    const pagos = JSON.parse(data);
-    // Convertir fechas de string a Date
-    return pagos.map((p: any) => ({
-      ...p,
-      fecha: new Date(p.fecha)
-    }));
-  }
-
-  private savePagosToStorage(pagos: Pago[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pagos));
-  }
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  deletePago(id: string) {
+    const pagoDoc = doc(this.firestore, `pagos/${id}`);
+    return deleteDoc(pagoDoc);
   }
 }

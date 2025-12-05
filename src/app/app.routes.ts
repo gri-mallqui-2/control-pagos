@@ -6,91 +6,91 @@ import { PagosListComponent } from './pagos-list/pagos-list.component';
 import { PagoFormComponent } from './pago-form/pago-form.component';
 import { PagoDetailComponent } from './pago-detail/pago-detail.component';
 import { CategoriasListComponent } from './categorias-list/categorias-list.component';
-import { EstadisticasComponent } from './estadisticas/estadisticas.component';
-// import { authGuard } from './guards/auth.guard';
-// import { loginGuard } from './guards/login.guard';
+import { authGuard } from './guards/auth.guard';
+import { loginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
   // Ruta por defecto - Redirecciona al login
-  { 
-    path: '', 
-    redirectTo: '/login', 
-    pathMatch: 'full' 
+  {
+    path: '',
+    redirectTo: '/login',
+    pathMatch: 'full'
   },
-  
+
   // ========================================
   // RUTAS PÚBLICAS (Solo accesibles sin login)
   // ========================================
-  { 
-    path: 'login', 
+  {
+    path: 'login',
     component: LoginComponent,
-    // canActivate: [loginGuard],  // ← Desactivado temporalmente
+    canActivate: [loginGuard],
     title: 'Iniciar Sesión'
   },
-  { 
-    path: 'register', 
+  {
+    path: 'register',
     component: RegisterComponent,
-    // canActivate: [loginGuard],  // ← Desactivado temporalmente
+    canActivate: [loginGuard],
     title: 'Registro de Usuario'
   },
-  
+
   // ========================================
   // RUTAS PROTEGIDAS (Requieren autenticación)
   // ========================================
-  { 
-    path: 'dashboard', 
+  {
+    path: 'dashboard',
     component: DashboardComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Panel Principal'
   },
-  
+
   // Gestión de Pagos
-  { 
-    path: 'pagos', 
+  {
+    path: 'pagos',
     component: PagosListComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Lista de Pagos'
   },
-  { 
-    path: 'pago/nuevo', 
+  {
+    path: 'pago/nuevo',
     component: PagoFormComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Nuevo Pago'
   },
-  { 
-    path: 'pago/editar/:id', 
+  {
+    path: 'pago/editar/:id',
     component: PagoFormComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Editar Pago'
   },
-  { 
-    path: 'pago/:id', 
+  {
+    path: 'pago/:id',
     component: PagoDetailComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Detalle del Pago'
   },
-  
+
   // Gestión de Categorías
-  { 
-    path: 'categorias', 
+  {
+    path: 'categorias',
     component: CategoriasListComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+    canActivate: [authGuard],
     title: 'Categorías'
   },
-  
-  // Estadísticas
-  { 
-    path: 'estadisticas', 
-    component: EstadisticasComponent,
-    // canActivate: [authGuard],  // ← Desactivado temporalmente
+
+  // Estadísticas (Lazy Loading)
+  {
+    path: 'estadisticas',
+    loadComponent: () => import('./estadisticas/estadisticas.component')
+      .then(m => m.EstadisticasComponent),
+    canActivate: [authGuard],
     title: 'Estadísticas'
   },
-  
+
   // ========================================
   // RUTA WILDCARD - 404 Not Found
   // ========================================
-  { 
-    path: '**', 
+  {
+    path: '**',
     redirectTo: '/login'
   }
 ];

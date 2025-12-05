@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { PagoService, Pago } from '../services/pago.service';
-import { CategoriaService } from '../services/categoria.service';
+import { PagoService, Pago } from '../services/pagos.service';
+import { CategoriaService } from '../services/categorias.service';
 
 @Component({
   selector: 'app-pago-form',
@@ -60,8 +60,8 @@ export class PagoFormComponent implements OnInit {
   loadPago(id: string) {
     this.loading = true;
     this.pagoService.getPagoById(id).subscribe(pago => {
-      const fechaStr = pago.fecha.toDate ? 
-        pago.fecha.toDate().toISOString().split('T')[0] : 
+      const fechaStr = pago.fecha.toDate ?
+        pago.fecha.toDate().toISOString().split('T')[0] :
         new Date(pago.fecha).toISOString().split('T')[0];
 
       this.pagoForm.patchValue({

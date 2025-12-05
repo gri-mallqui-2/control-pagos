@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { CategoriaService, Categoria } from '../services/categoria.service';
+import { CategoriaService, Categoria } from '../services/categorias.service';
 
 @Component({
   selector: 'app-categorias-list',
@@ -21,7 +21,7 @@ export class CategoriasListComponent implements OnInit {
   categoriasDefault: string[] = [];
   loading: boolean = true;
   userEmail: string = '';
-  
+
   // Formulario nueva categoría
   showForm: boolean = false;
   editingId: string | null = null;

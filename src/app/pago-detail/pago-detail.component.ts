@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { PagoService, Pago } from '../services/pago.service';
+import { PagoService, Pago } from '../services/pagos.service';
 
 @Component({
   selector: 'app-pago-detail',
