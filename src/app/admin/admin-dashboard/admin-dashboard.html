@@ -1,4 +1,10 @@
 <div class="admin-dashboard">
+  <!-- Header with user info and logout -->
+  <div class="top-bar">
+    <span class="user-email">{{ userEmail }}</span>
+    <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+  </div>
+
   <div class="dashboard-header">
     <h1>📊 Panel de Administración</h1>
     <p>Vista general del sistema</p>

@@ -155,4 +155,10 @@ export class ClienteDashboard implements OnInit {
         return '';
     }
   }
+
+  logout(): void {
+    this.authService.logout().then(() => {
+      this.router.navigate(['/login']);
+    });
+  }
 }

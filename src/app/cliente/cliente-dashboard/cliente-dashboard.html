@@ -1,13 +1,15 @@
 <div class="cliente-dashboard">
+    <!-- Header with user info and logout -->
+    <div class="top-bar">
+        <span class="user-email">{{ currentUser?.email }}</span>
+        <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+
     <div class="dashboard-header">
         <div class="header-content">
             <h1>👋 Bienvenido, {{ currentUser?.email }}</h1>
             <p>Gestiona tus pagos y consulta tu historial</p>
         </div>
-        <button class="profile-btn" (click)="navigateToProfile()">
-            <span class="profile-avatar">{{ (currentUser?.email || 'U').charAt(0).toUpperCase() }}</span>
-            <span>Mi Perfil</span>
-        </button>
     </div>
 
     <!-- Loading State -->

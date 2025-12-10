@@ -4,6 +4,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { PagoService, Pago } from '../services/pagos.service';
+import { UserService } from '../services/user.service';
 import { CurrencySolPipe } from '../pipes/currency-sol.pipe';
 
 @Component({
@@ -16,6 +17,7 @@ import { CurrencySolPipe } from '../pipes/currency-sol.pipe';
 export class PagosListComponent implements OnInit {
   private authService = inject(AuthService);
   private pagoService = inject(PagoService);
+  private userService = inject(UserService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -23,6 +25,7 @@ export class PagosListComponent implements OnInit {
   pagosFiltrados: Pago[] = [];
   loading: boolean = true;
   userEmail: string = '';
+  isAdmin: boolean = false;
 
   // Filtros
   searchTerm: string = '';
@@ -38,19 +41,29 @@ export class PagosListComponent implements OnInit {
     if (user) {
       this.userEmail = user.email || '';
 
-      // Leer parámetro de categoría desde la URL
-      this.route.queryParams.subscribe(params => {
-        this.categoriaFromRoute = params['categoria'] || null;
-        if (this.categoriaFromRoute) {
-          this.filterCategoria = this.categoriaFromRoute;
-        }
-        this.loadPagos(user.uid);
+      // Verificar si el usuario es admin
+      this.userService.getUserById(user.uid).subscribe(userData => {
+        this.isAdmin = userData?.role === 'admin';
+
+        // Leer parámetro de categoría desde la URL
+        this.route.queryParams.subscribe(params => {
+          this.categoriaFromRoute = params['categoria'] || null;
+          if (this.categoriaFromRoute) {
+            this.filterCategoria = this.categoriaFromRoute;
+          }
+          this.loadPagos(user.uid);
+        });
       });
     }
   }
 
   loadPagos(userId: string) {
-    this.pagoService.getPagosByUser(userId).subscribe(pagos => {
+    // Si es admin, cargar todos los pagos. Si no, solo los del usuario
+    const pagosObservable = this.isAdmin
+      ? this.pagoService.getAllPagos()
+      : this.pagoService.getPagosByUser(userId);
+
+    pagosObservable.subscribe(pagos => {
       this.pagos = pagos;
       this.extractCategorias();
       this.applyFilters();
@@ -136,6 +149,10 @@ export class PagosListComponent implements OnInit {
     this.categoriaFromRoute = null;
     this.router.navigate(['/pagos']); // Limpiar query params
     this.applyFilters();
+  }
+
+  getPageTitle(): string {
+    return 'Lista de Pagos';
   }
 
   logout() {

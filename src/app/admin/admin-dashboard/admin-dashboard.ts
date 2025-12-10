@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { PagoService, Pago } from '../../services/pagos.service';
 import { User } from '../../models/user.model';
@@ -25,6 +26,7 @@ interface GlobalStats {
   styleUrl: './admin-dashboard.css',
 })
 export class AdminDashboard implements OnInit {
+  private authService = inject(AuthService);
   private userService = inject(UserService);
   private pagosService = inject(PagoService);
   private router = inject(Router);
@@ -41,8 +43,13 @@ export class AdminDashboard implements OnInit {
 
   recentUsers: User[] = [];
   loading = true;
+  userEmail: string = '';
 
   ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.userEmail = currentUser.email || '';
+    }
     this.loadGlobalStats();
     this.loadRecentUsers();
   }
@@ -93,5 +100,11 @@ export class AdminDashboard implements OnInit {
 
   navigateToClientFiles(): void {
     this.router.navigate(['/admin/client-files']);
+  }
+
+  logout(): void {
+    this.authService.logout().then(() => {
+      this.router.navigate(['/login']);
+    });
   }
 }
