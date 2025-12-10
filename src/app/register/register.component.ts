@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-register',
@@ -14,24 +15,30 @@ import { AuthService } from '../services/auth.service';
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
   registerForm: FormGroup;
   errorMessage: string = '';
+  successMessage: string = '';
   loading: boolean = false;
 
   constructor() {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
+      firstName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
+      lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
+      phone: ['', [Validators.pattern(/^\d{9}$/)]]
     }, { validators: this.passwordMatchValidator });
   }
 
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
-    
+
     if (password && confirmPassword && password.value !== confirmPassword.value) {
       confirmPassword.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
@@ -51,33 +58,64 @@ export class RegisterComponent {
     return this.registerForm.get('confirmPassword');
   }
 
-  onSubmit() {
+  get dni() {
+    return this.registerForm.get('dni');
+  }
+
+  get firstName() {
+    return this.registerForm.get('firstName');
+  }
+
+  get lastName() {
+    return this.registerForm.get('lastName');
+  }
+
+  get phone() {
+    return this.registerForm.get('phone');
+  }
+
+  async onSubmit() {
     if (this.registerForm.valid) {
       this.loading = true;
       this.errorMessage = '';
 
-      const { email, password } = this.registerForm.value;
+      const { email, password, dni, firstName, lastName, phone } = this.registerForm.value;
 
-      this.authService.register(email, password)
-        .then(() => {
-          this.router.navigate(['/dashboard']);
-        })
-        .catch((error) => {
-          this.loading = false;
-          switch (error.code) {
-            case 'auth/email-already-in-use':
-              this.errorMessage = 'Este correo ya está registrado';
-              break;
-            case 'auth/invalid-email':
-              this.errorMessage = 'Email inválido';
-              break;
-            case 'auth/weak-password':
-              this.errorMessage = 'La contraseña es muy débil';
-              break;
-            default:
-              this.errorMessage = 'Error al crear la cuenta';
+      try {
+        // Registrar usuario en Firebase Auth
+        const userCredential = await this.authService.register(email, password);
+
+        // Crear documento de usuario en Firestore con rol 'cliente' y datos adicionales
+        await this.userService.createUser(
+          userCredential.user.uid,
+          email,
+          'cliente',
+          {
+            dni,
+            firstName,
+            lastName,
+            phone: phone || undefined
           }
-        });
+        );
+
+        // Redirigir al dashboard (que luego redirigirá al dashboard de cliente)
+        this.router.navigate(['/dashboard']);
+      } catch (error: any) {
+        this.loading = false;
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            this.errorMessage = 'Este correo ya está registrado';
+            break;
+          case 'auth/invalid-email':
+            this.errorMessage = 'Email inválido';
+            break;
+          case 'auth/weak-password':
+            this.errorMessage = 'La contraseña es muy débil';
+            break;
+          default:
+            this.errorMessage = 'Error al crear la cuenta';
+        }
+      }
     }
   }
 }

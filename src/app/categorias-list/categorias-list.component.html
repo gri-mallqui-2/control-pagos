@@ -29,26 +29,17 @@
     <!-- Formulario -->
     <div class="form-card" *ngIf="showForm">
       <h3>{{ editingId ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
-      
+
       <div class="form-group">
         <label>Nombre de la Categoría</label>
-        <input 
-          type="text" 
-          [(ngModel)]="nuevaCategoria.nombre"
-          class="form-control"
-          placeholder="Ej: Servicios"
-        >
+        <input type="text" [(ngModel)]="nuevaCategoria.nombre" class="form-control" placeholder="Ej: Servicios">
       </div>
 
       <div class="form-group">
         <label>Selecciona un Ícono</label>
         <div class="iconos-grid">
-          <button 
-            *ngFor="let icono of iconosDisponibles"
-            class="icono-btn"
-            [class.selected]="nuevaCategoria.icono === icono"
-            (click)="selectIcono(icono)"
-          >
+          <button *ngFor="let icono of iconosDisponibles" class="icono-btn"
+            [class.selected]="nuevaCategoria.icono === icono" (click)="selectIcono(icono)">
             {{ icono }}
           </button>
         </div>
@@ -57,13 +48,9 @@
       <div class="form-group">
         <label>Selecciona un Color</label>
         <div class="colores-grid">
-          <button 
-            *ngFor="let color of coloresDisponibles"
-            class="color-btn"
-            [class.selected]="nuevaCategoria.color === color"
-            [style.background]="color"
-            (click)="selectColor(color)"
-          ></button>
+          <button *ngFor="let color of coloresDisponibles" class="color-btn"
+            [class.selected]="nuevaCategoria.color === color" [style.background]="color"
+            (click)="selectColor(color)"></button>
         </div>
       </div>
 
@@ -89,7 +76,8 @@
     <section class="categorias-section" *ngIf="!loading">
       <h2>Categorías Predeterminadas</h2>
       <div class="categorias-grid">
-        <div class="categoria-card default" *ngFor="let cat of categoriasDefault">
+        <div class="categoria-card default" *ngFor="let cat of categoriasDefault" (click)="viewPagosByCategoria(cat)"
+          style="cursor: pointer;" title="Click para ver pagos de {{ cat }}">
           <span class="categoria-icono">📁</span>
           <span class="categoria-nombre">{{ cat }}</span>
         </div>
@@ -100,16 +88,14 @@
     <section class="categorias-section" *ngIf="!loading">
       <h2>Mis Categorías Personalizadas</h2>
       <div class="categorias-grid" *ngIf="categorias.length > 0">
-        <div 
-          class="categoria-card custom" 
-          *ngFor="let cat of categorias"
-          [style.background]="cat.color"
-        >
+        <div class="categoria-card custom" *ngFor="let cat of categorias" [style.background]="cat.color"
+          (click)="viewPagosByCategoria(cat.nombre)" style="cursor: pointer;"
+          title="Click para ver pagos de {{ cat.nombre }}">
           <div class="categoria-content">
             <span class="categoria-icono">{{ cat.icono }}</span>
             <span class="categoria-nombre">{{ cat.nombre }}</span>
           </div>
-          <div class="categoria-actions">
+          <div class="categoria-actions" (click)="$event.stopPropagation()">
             <button class="btn-edit-small" (click)="editCategoria(cat)">✏️</button>
             <button class="btn-delete-small" (click)="deleteCategoria(cat.id!)">🗑️</button>
           </div>

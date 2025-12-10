@@ -1,0 +1,51 @@
+<div class="cliente-profile">
+    <div class="profile-header">
+        <button class="back-btn" (click)="goBack()">
+            ← Volver al Dashboard
+        </button>
+        <h1>👤 Mi Perfil</h1>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando perfil...</p>
+    </div>
+
+    <div *ngIf="!loading && currentUser" class="profile-content">
+        <div class="profile-card">
+            <div class="profile-avatar-large">
+                {{ (currentUser.email || 'U').charAt(0).toUpperCase() }}
+            </div>
+
+            <div class="profile-info">
+                <div class="info-row">
+                    <label>Email:</label>
+                    <span>{{ currentUser.email }}</span>
+                </div>
+
+                <div class="info-row">
+                    <label>Rol:</label>
+                    <span class="role-badge cliente">👤 Cliente</span>
+                </div>
+
+                <div class="info-row">
+                    <label>Estado:</label>
+                    <span [class]="'status-badge ' + (currentUser.isActive ? 'active' : 'inactive')">
+                        {{ currentUser.isActive ? '✓ Activo' : '✗ Inactivo' }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <label>Miembro desde:</label>
+                    <span>{{ currentUser.createdAt | date:'dd/MM/yyyy' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <button class="logout-btn" (click)="logout()">
+                🚪 Cerrar Sesión
+            </button>
+        </div>
+    </div>
+</div>

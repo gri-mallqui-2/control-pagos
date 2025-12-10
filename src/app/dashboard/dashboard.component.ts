@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { PagoService, Pago } from '../services/pagos.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,53 +13,47 @@ import { PagoService, Pago } from '../services/pagos.service';
 })
 export class DashboardComponent implements OnInit {
   private authService = inject(AuthService);
-  private pagoService = inject(PagoService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
-  pagos: Pago[] = [];
-  userEmail: string = '';
-  totalPagos: number = 0;
-  totalPagado: number = 0;
-  totalPendiente: number = 0;
-  totalVencido: number = 0;
-  loading: boolean = true;
+  loading = true;
 
   ngOnInit() {
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.userEmail = user.email || '';
-      this.loadPagos(user.uid);
-    }
+    this.redirectBasedOnRole();
   }
 
-  loadPagos(userId: string) {
-    this.pagoService.getPagosByUser(userId).subscribe(pagos => {
-      this.pagos = pagos;
-      this.calculateStats();
-      this.loading = false;
-    });
-  }
+  redirectBasedOnRole(): void {
+    const authUser = this.authService.getCurrentUser();
 
-  calculateStats() {
-    this.totalPagos = this.pagos.length;
-    this.totalPagado = this.pagos
-      .filter(p => p.estado === 'pagado')
-      .reduce((sum, p) => sum + p.monto, 0);
-    this.totalPendiente = this.pagos
-      .filter(p => p.estado === 'pendiente')
-      .reduce((sum, p) => sum + p.monto, 0);
-    this.totalVencido = this.pagos
-      .filter(p => p.estado === 'vencido')
-      .reduce((sum, p) => sum + p.monto, 0);
-  }
-
-  getRecentPagos() {
-    return this.pagos.slice(0, 5);
-  }
-
-  logout() {
-    this.authService.logout().then(() => {
+    if (!authUser) {
       this.router.navigate(['/login']);
+      return;
+    }
+
+    // Obtener datos completos del usuario desde Firestore
+    this.userService.getUserById(authUser.uid).subscribe(user => {
+      if (!user) {
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      // Verificar si el usuario está activo
+      if (!user.isActive) {
+        alert('Tu cuenta ha sido desactivada. Contacta al administrador.');
+        this.authService.logout();
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      // Redirigir según el rol
+      if (user.role === 'admin') {
+        this.router.navigate(['/admin/dashboard']);
+      } else if (user.role === 'cliente') {
+        this.router.navigate(['/cliente/dashboard']);
+      } else {
+        // Rol desconocido, redirigir al login
+        this.router.navigate(['/login']);
+      }
     });
   }
 }

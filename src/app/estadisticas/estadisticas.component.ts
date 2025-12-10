@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 import { PagoService, Pago } from '../services/pagos.service';
 
 interface EstadisticaCategoria {
@@ -24,6 +25,7 @@ interface EstadisticaMensual {
 })
 export class EstadisticasComponent implements OnInit {
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private pagoService = inject(PagoService);
   private router = inject(Router);
 
@@ -46,18 +48,70 @@ export class EstadisticasComponent implements OnInit {
   estadisticasMensuales: EstadisticaMensual[] = [];
 
   ngOnInit() {
+    console.log('🔵 Estadisticas: ngOnInit called');
     const user = this.authService.getCurrentUser();
+    console.log('🔵 Estadisticas: Current user:', user);
+
     if (user) {
       this.userEmail = user.email || '';
+      console.log('🔵 Estadisticas: Loading pagos for UID:', user.uid);
       this.loadPagos(user.uid);
+    } else {
+      console.error('❌ Estadisticas: No authenticated user');
+      this.loading = false;
     }
   }
 
   loadPagos(userId: string) {
-    this.pagoService.getPagosByUser(userId).subscribe(pagos => {
-      this.pagos = pagos;
-      this.calculateStatistics();
-      this.loading = false;
+    console.log('🔵 Estadisticas: Fetching pagos for userId:', userId);
+
+    // Obtener información del usuario para verificar su rol
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        console.log('🔵 Estadisticas: User data:', user);
+        const isAdmin = user?.role === 'admin';
+        console.log('🔵 Estadisticas: Is admin?', isAdmin);
+
+        if (isAdmin) {
+          // Admin: cargar TODOS los pagos
+          console.log('🔵 Estadisticas: Loading ALL pagos (admin mode)');
+          this.pagoService.getAllPagos().subscribe({
+            next: (pagos) => {
+              console.log('✅ Estadisticas: All pagos loaded:', pagos.length, 'pagos');
+              console.log('📊 Estadisticas: Pagos data:', pagos);
+
+              this.pagos = pagos;
+              this.calculateStatistics();
+              this.loading = false;
+            },
+            error: (error) => {
+              console.error('❌ Estadisticas: Error loading all pagos:', error);
+              this.loading = false;
+            }
+          });
+        } else {
+          // Cliente: cargar solo sus pagos
+          console.log('🔵 Estadisticas: Loading user pagos (client mode)');
+          this.pagoService.getPagosByUser(userId).subscribe({
+            next: (pagos) => {
+              console.log('✅ Estadisticas: User pagos loaded:', pagos.length, 'pagos');
+              console.log('📊 Estadisticas: Pagos data:', pagos);
+
+              this.pagos = pagos;
+              this.calculateStatistics();
+              this.loading = false;
+            },
+            error: (error) => {
+              console.error('❌ Estadisticas: Error loading user pagos:', error);
+              this.loading = false;
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('❌ Estadisticas: Error getting user data:', error);
+        this.loading = false;
+      }
     });
   }
 

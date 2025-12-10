@@ -1,20 +1,21 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <h1>Crear Cuenta</h1>
-      <p>Regístrate para comenzar</p>
+      <h1>✨ Crear Cuenta</h1>
+      <p>Regístrate como cliente</p>
+    </div>
+
+    <!-- Info Badge -->
+    <div class="info-badge">
+      <span class="badge-icon">👤</span>
+      <span class="badge-text">Serás registrado como <strong>Cliente</strong></span>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="email">Correo Electrónico</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email"
-          class="form-control"
-          [class.is-invalid]="email?.invalid && email?.touched"
-        >
+        <input type="email" id="email" formControlName="email" class="form-control"
+          [class.is-invalid]="email?.invalid && email?.touched" placeholder="tu@email.com">
         <div class="error-message" *ngIf="email?.invalid && email?.touched">
           <span *ngIf="email?.errors?.['required']">El correo es requerido</span>
           <span *ngIf="email?.errors?.['email']">Ingrese un correo válido</span>
@@ -23,13 +24,8 @@
 
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password"
-          class="form-control"
-          [class.is-invalid]="password?.invalid && password?.touched"
-        >
+        <input type="password" id="password" formControlName="password" class="form-control"
+          [class.is-invalid]="password?.invalid && password?.touched" placeholder="Mínimo 6 caracteres">
         <div class="error-message" *ngIf="password?.invalid && password?.touched">
           <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
           <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
@@ -38,16 +34,50 @@
 
       <div class="form-group">
         <label for="confirmPassword">Confirmar Contraseña</label>
-        <input 
-          type="password" 
-          id="confirmPassword" 
-          formControlName="confirmPassword"
-          class="form-control"
-          [class.is-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
-        >
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control"
+          [class.is-invalid]="confirmPassword?.invalid && confirmPassword?.touched" placeholder="Repite tu contraseña">
         <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
           <span *ngIf="confirmPassword?.errors?.['required']">Confirme su contraseña</span>
           <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Las contraseñas no coinciden</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dni">DNI *</label>
+        <input type="text" id="dni" formControlName="dni" class="form-control"
+          [class.is-invalid]="dni?.invalid && dni?.touched" placeholder="12345678" maxlength="8">
+        <div class="error-message" *ngIf="dni?.invalid && dni?.touched">
+          <span *ngIf="dni?.errors?.['required']">El DNI es requerido</span>
+          <span *ngIf="dni?.errors?.['pattern']">Ingrese un DNI válido (8 dígitos)</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="firstName">Nombre *</label>
+        <input type="text" id="firstName" formControlName="firstName" class="form-control"
+          [class.is-invalid]="firstName?.invalid && firstName?.touched" placeholder="Juan">
+        <div class="error-message" *ngIf="firstName?.invalid && firstName?.touched">
+          <span *ngIf="firstName?.errors?.['required']">El nombre es requerido</span>
+          <span *ngIf="firstName?.errors?.['pattern']">Solo se permiten letras</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Apellido *</label>
+        <input type="text" id="lastName" formControlName="lastName" class="form-control"
+          [class.is-invalid]="lastName?.invalid && lastName?.touched" placeholder="Pérez">
+        <div class="error-message" *ngIf="lastName?.invalid && lastName?.touched">
+          <span *ngIf="lastName?.errors?.['required']">El apellido es requerido</span>
+          <span *ngIf="lastName?.errors?.['pattern']">Solo se permiten letras</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Teléfono (opcional)</label>
+        <input type="text" id="phone" formControlName="phone" class="form-control"
+          [class.is-invalid]="phone?.invalid && phone?.touched" placeholder="987654321" maxlength="9">
+        <div class="error-message" *ngIf="phone?.invalid && phone?.touched">
+          <span *ngIf="phone?.errors?.['pattern']">Ingrese un teléfono válido (9 dígitos)</span>
         </div>
       </div>
 
@@ -55,18 +85,31 @@
         {{ errorMessage }}
       </div>
 
-      <button 
-        type="submit" 
-        class="btn-primary"
-        [disabled]="registerForm.invalid || loading"
-      >
-        <span *ngIf="!loading">Crear Cuenta</span>
-        <span *ngIf="loading">Creando cuenta...</span>
+      <div class="success-message text-center" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || loading">
+        <span *ngIf="!loading">✨ Crear Cuenta</span>
+        <span *ngIf="loading">
+          <span class="spinner-small"></span> Creando cuenta...
+        </span>
       </button>
     </form>
 
     <div class="register-footer">
       <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="benefits-section">
+      <h3>Como cliente podrás:</h3>
+      <ul>
+        <li>✅ Crear y gestionar tus pagos</li>
+        <li>✅ Ver tu historial personal</li>
+        <li>✅ Consultar el estado de tus pagos</li>
+        <li>✅ Filtrar por fecha y categoría</li>
+      </ul>
     </div>
   </div>
 </div>

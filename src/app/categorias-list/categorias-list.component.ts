@@ -44,9 +44,18 @@ export class CategoriasListComponent implements OnInit {
   }
 
   loadCategorias(userId: string) {
-    this.categoriaService.getCategoriasByUser(userId).subscribe(categorias => {
-      this.categorias = categorias;
-      this.loading = false;
+    console.log('🔵 Categorias: Loading for userId:', userId);
+    this.categoriaService.getCategoriasByUser(userId).subscribe({
+      next: (categorias) => {
+        console.log('✅ Categorias: Loaded:', categorias.length, 'categorias');
+        console.log('📊 Categorias: Data:', categorias);
+        this.categorias = categorias;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('❌ Categorias: Error loading:', error);
+        this.loading = false;
+      }
     });
   }
 
@@ -129,6 +138,12 @@ export class CategoriasListComponent implements OnInit {
   logout() {
     this.authService.logout().then(() => {
       this.router.navigate(['/login']);
+    });
+  }
+
+  viewPagosByCategoria(categoria: string): void {
+    this.router.navigate(['/pagos'], {
+      queryParams: { categoria: categoria }
     });
   }
 }

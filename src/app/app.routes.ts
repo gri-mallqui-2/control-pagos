@@ -8,12 +8,16 @@ import { PagoDetailComponent } from './pago-detail/pago-detail.component';
 import { CategoriasListComponent } from './categorias-list/categorias-list.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
+import { adminGuard } from './guards/admin.guard';
+import { AdminDashboard } from './admin/admin-dashboard/admin-dashboard';
+import { UserManagement } from './admin/user-management/user-management';
+import { ClienteDashboard } from './cliente/cliente-dashboard/cliente-dashboard';
 
 export const routes: Routes = [
-  // Ruta por defecto - Redirecciona al login
+  // Ruta por defecto - Redirecciona al dashboard
   {
     path: '',
-    redirectTo: '/login',
+    redirectTo: '/dashboard',
     pathMatch: 'full'
   },
 
@@ -43,7 +47,71 @@ export const routes: Routes = [
     title: 'Panel Principal'
   },
 
-  // Gestión de Pagos
+  // ========================================
+  // RUTAS DE ADMINISTRADOR (Solo admin)
+  // ========================================
+  {
+    path: 'admin',
+    canActivate: [authGuard, adminGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        component: AdminDashboard,
+        title: '📊 Panel de Administración'
+      },
+      {
+        path: 'users',
+        component: UserManagement,
+        title: '👥 Gestión de Usuarios'
+      },
+      {
+        path: 'client-files',
+        loadComponent: () => import('./admin/client-files/client-files.component')
+          .then(m => m.ClientFilesComponent),
+        title: '📁 Archivos de Clientes'
+      },
+      {
+        path: 'pagos',
+        component: PagosListComponent,
+        title: '💳 Todos los Pagos'
+      }
+    ]
+  },
+
+  // ========================================
+  // RUTAS DE CLIENTE
+  // ========================================
+  {
+    path: 'cliente',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        component: ClienteDashboard,
+        title: '👤 Mi Panel'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./cliente/cliente-profile/cliente-profile')
+          .then(m => m.ClienteProfile),
+        title: '👤 Mi Perfil'
+      }
+    ]
+  },
+
+  // ========================================
+  // GESTIÓN DE PAGOS (Accesible para todos los usuarios autenticados)
+  // ========================================
   {
     path: 'pagos',
     component: PagosListComponent,
@@ -69,7 +137,9 @@ export const routes: Routes = [
     title: 'Detalle del Pago'
   },
 
-  // Gestión de Categorías
+  // ========================================
+  // GESTIÓN DE CATEGORÍAS (Solo admin puede editar)
+  // ========================================
   {
     path: 'categorias',
     component: CategoriasListComponent,
@@ -77,7 +147,9 @@ export const routes: Routes = [
     title: 'Categorías'
   },
 
-  // Estadísticas (Lazy Loading)
+  // ========================================
+  // ESTADÍSTICAS (Lazy Loading)
+  // ========================================
   {
     path: 'estadisticas',
     loadComponent: () => import('./estadisticas/estadisticas.component')
@@ -91,6 +163,6 @@ export const routes: Routes = [
   // ========================================
   {
     path: '**',
-    redirectTo: '/login'
+    redirectTo: '/dashboard'
   }
 ];

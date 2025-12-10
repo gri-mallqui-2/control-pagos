@@ -35,7 +35,8 @@ export class PagoFormComponent implements OnInit {
       fecha: ['', Validators.required],
       categoria: ['', Validators.required],
       estado: ['pendiente', Validators.required],
-      descripcion: ['']
+      descripcion: [''],
+      metodoPago: ['otro', Validators.required]
     });
   }
 
@@ -90,7 +91,7 @@ export class PagoFormComponent implements OnInit {
       const pagoData = {
         ...this.pagoForm.value,
         fecha: new Date(this.pagoForm.value.fecha),
-        usuarioId: userId
+        userId: userId  // FIXED: Changed from 'usuarioId' to 'userId' to match Pago interface
       };
 
       if (this.isEditMode && this.pagoId) {

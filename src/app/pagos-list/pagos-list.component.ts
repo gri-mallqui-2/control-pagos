@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { PagoService, Pago } from '../services/pagos.service';
@@ -17,6 +17,7 @@ export class PagosListComponent implements OnInit {
   private authService = inject(AuthService);
   private pagoService = inject(PagoService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   pagos: Pago[] = [];
   pagosFiltrados: Pago[] = [];
@@ -30,12 +31,21 @@ export class PagosListComponent implements OnInit {
   sortBy: string = 'fecha-desc';
 
   categorias: string[] = [];
+  categoriaFromRoute: string | null = null; // Categoría desde query params
 
   ngOnInit() {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.userEmail = user.email || '';
-      this.loadPagos(user.uid);
+
+      // Leer parámetro de categoría desde la URL
+      this.route.queryParams.subscribe(params => {
+        this.categoriaFromRoute = params['categoria'] || null;
+        if (this.categoriaFromRoute) {
+          this.filterCategoria = this.categoriaFromRoute;
+        }
+        this.loadPagos(user.uid);
+      });
     }
   }
 
@@ -119,6 +129,13 @@ export class PagosListComponent implements OnInit {
 
   editPago(id: string) {
     this.router.navigate(['/pagos/editar', id]);
+  }
+
+  clearCategoryFilter() {
+    this.filterCategoria = 'todas';
+    this.categoriaFromRoute = null;
+    this.router.navigate(['/pagos']); // Limpiar query params
+    this.applyFilters();
   }
 
   logout() {

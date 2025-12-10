@@ -24,15 +24,21 @@
       <a routerLink="/pagos/nuevo" class="btn-new">+ Nuevo Pago</a>
     </div>
 
+    <!-- Indicador de filtro activo -->
+    <div class="filter-badge-container" *ngIf="categoriaFromRoute">
+      <div class="filter-badge">
+        <span class="filter-icon">🏷️</span>
+        <span class="filter-text">Filtrando por categoría: <strong>{{ categoriaFromRoute }}</strong></span>
+        <button class="filter-clear-btn" (click)="clearCategoryFilter()" title="Limpiar filtro">
+          ✕
+        </button>
+      </div>
+    </div>
+
     <div class="filters-section">
       <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="Buscar por concepto o descripción..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
-          class="search-input"
-        >
+        <input type="text" placeholder="Buscar por concepto o descripción..." [(ngModel)]="searchTerm"
+          (input)="onSearchChange()" class="search-input">
       </div>
 
       <div class="filters">
@@ -70,7 +76,7 @@
             <h3>{{ pago.concepto }}</h3>
             <span class="pago-estado" [ngClass]="pago.estado">{{ pago.estado }}</span>
           </div>
-          
+
           <div class="pago-body">
             <div class="pago-row">
               <span class="label">Categoría:</span>
@@ -83,6 +89,16 @@
             <div class="pago-row">
               <span class="label">Fecha:</span>
               <span>{{ pago.fecha.toDate ? pago.fecha.toDate() : pago.fecha | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="pago-row" *ngIf="pago.metodoPago">
+              <span class="label">Método:</span>
+              <span class="pago-metodo">
+                <span *ngIf="pago.metodoPago === 'yape'">📱 Yape</span>
+                <span *ngIf="pago.metodoPago === 'tarjeta'">💳 Tarjeta</span>
+                <span *ngIf="pago.metodoPago === 'efectivo'">💵 Efectivo</span>
+                <span *ngIf="pago.metodoPago === 'transferencia'">🏦 Transferencia</span>
+                <span *ngIf="pago.metodoPago === 'otro'">📝 Otro</span>
+              </span>
             </div>
             <div class="pago-row" *ngIf="pago.descripcion">
               <span class="label">Descripción:</span>

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 export interface Pago {
   id?: string;
@@ -11,6 +12,7 @@ export interface Pago {
   categoria: string;
   estado: 'pendiente' | 'pagado' | 'vencido';
   descripcion?: string;
+  metodoPago?: 'yape' | 'tarjeta' | 'efectivo' | 'transferencia' | 'otro';
 }
 
 @Injectable({
@@ -22,12 +24,31 @@ export class PagoService {
 
   // Obtener todos los pagos de un usuario
   getPagosByUser(userId: string): Observable<Pago[]> {
+    console.log('🔵 PagoService: getPagosByUser called with userId:', userId);
     const q = query(
       this.pagosCollection,
       where('userId', '==', userId)
     );
-    return collectionData(q, { idField: 'id' }) as Observable<Pago[]>;
+    console.log('🔵 PagoService: Query created, fetching data...');
+
+    return (collectionData(q, { idField: 'id' }) as Observable<Pago[]>).pipe(
+      map((pagos: Pago[]) => {
+        console.log('✅ PagoService: Pagos received:', pagos.length, 'pagos');
+        console.log('📊 PagoService: Pagos data:', pagos);
+        return pagos;
+      }),
+      catchError((error) => {
+        console.error('❌ PagoService: Error fetching pagos:', error);
+        return of([]); // Retornar array vacío en caso de error
+      })
+    );
   }
+
+  // Obtener todos los pagos (solo para admin)
+  getAllPagos(): Observable<Pago[]> {
+    return collectionData(this.pagosCollection, { idField: 'id' }) as Observable<Pago[]>;
+  }
+
 
   // Obtener un pago por ID
   getPagoById(id: string): Observable<Pago> {
