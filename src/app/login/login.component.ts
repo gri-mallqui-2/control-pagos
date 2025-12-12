@@ -6,12 +6,6 @@ import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { take } from 'rxjs/operators';
 
-// Credenciales de administrador predefinidas
-const ADMIN_CREDENTIALS = {
-  email: 'admin@controlpagos.com',
-  password: 'Admin123456'
-};
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -34,9 +28,6 @@ export class LoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
-
-    // Verificar y crear cuenta de administrador si no existe
-    this.ensureAdminExists();
   }
 
   get email() {
@@ -47,77 +38,7 @@ export class LoginComponent implements OnInit {
     return this.loginForm.get('password');
   }
 
-  /**
-   * Asegura que exista la cuenta de administrador predefinida
-   */
-  private async ensureAdminExists(): Promise<void> {
-    try {
-      // Intentar crear la cuenta de administrador
-      const userCredential = await this.authService.register(
-        ADMIN_CREDENTIALS.email,
-        ADMIN_CREDENTIALS.password
-      );
 
-      // Crear documento en Firestore con rol admin
-      await this.userService.createUser(
-        userCredential.user.uid,
-        ADMIN_CREDENTIALS.email,
-        'admin'
-      );
-
-      console.log('✅ Cuenta de administrador creada exitosamente');
-    } catch (error: any) {
-      // Si el error es que el email ya existe, está bien
-      if (error.code === 'auth/email-already-in-use') {
-        console.log('ℹ️ Cuenta de administrador ya existe');
-      } else {
-        console.log('ℹ️ Verificación de admin completada');
-      }
-    }
-  }
-
-  /**
-   * Login rápido como administrador
-   */
-  async loginAsAdmin(): Promise<void> {
-    this.loading = true;
-    this.errorMessage = '';
-
-    try {
-      const userCredential = await this.authService.login(
-        ADMIN_CREDENTIALS.email,
-        ADMIN_CREDENTIALS.password
-      );
-
-      // Verificar/crear documento en Firestore
-      this.userService.getUserById(userCredential.user.uid).subscribe(async (user) => {
-        if (!user) {
-          await this.userService.createUser(
-            userCredential.user.uid,
-            ADMIN_CREDENTIALS.email,
-            'admin'
-          );
-        }
-        this.router.navigate(['/dashboard']);
-      });
-    } catch (error: any) {
-      this.loading = false;
-      this.errorMessage = 'Error al iniciar sesión como administrador';
-      console.error('Error admin login:', error);
-    }
-  }
-
-  /**
-   * Mostrar formulario para login de cliente
-   */
-  showClienteLogin(): void {
-    // Limpiar el formulario y enfocar el campo de email
-    this.loginForm.reset();
-    this.errorMessage = '';
-    setTimeout(() => {
-      document.getElementById('email')?.focus();
-    }, 100);
-  }
 
   async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
@@ -146,10 +67,10 @@ export class LoginComponent implements OnInit {
           console.log('📋 Documento encontrado:', user);
 
           if (!user) {
-            // El usuario no tiene documento en Firestore, crearlo con rol 'cliente'
+            // El usuario no tiene documento en Firestore, crearlo
             console.log('⚠️ Usuario sin documento en Firestore, creando...');
             try {
-              await this.userService.createUser(uid, email, 'cliente');
+              await this.userService.createUser(uid, email);
               console.log('✅ Documento de usuario creado exitosamente');
 
               // Notificar al administrador

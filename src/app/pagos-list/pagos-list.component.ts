@@ -25,7 +25,6 @@ export class PagosListComponent implements OnInit {
   pagosFiltrados: Pago[] = [];
   loading: boolean = true;
   userEmail: string = '';
-  isAdmin: boolean = false;
 
   // Filtros
   searchTerm: string = '';
@@ -41,29 +40,20 @@ export class PagosListComponent implements OnInit {
     if (user) {
       this.userEmail = user.email || '';
 
-      // Verificar si el usuario es admin
-      this.userService.getUserById(user.uid).subscribe(userData => {
-        this.isAdmin = userData?.role === 'admin';
-
-        // Leer parámetro de categoría desde la URL
-        this.route.queryParams.subscribe(params => {
-          this.categoriaFromRoute = params['categoria'] || null;
-          if (this.categoriaFromRoute) {
-            this.filterCategoria = this.categoriaFromRoute;
-          }
-          this.loadPagos(user.uid);
-        });
+      // Leer parámetro de categoría desde la URL
+      this.route.queryParams.subscribe(params => {
+        this.categoriaFromRoute = params['categoria'] || null;
+        if (this.categoriaFromRoute) {
+          this.filterCategoria = this.categoriaFromRoute;
+        }
+        this.loadPagos(user.uid);
       });
     }
   }
 
   loadPagos(userId: string) {
-    // Si es admin, cargar todos los pagos. Si no, solo los del usuario
-    const pagosObservable = this.isAdmin
-      ? this.pagoService.getAllPagos()
-      : this.pagoService.getPagosByUser(userId);
-
-    pagosObservable.subscribe(pagos => {
+    // Cargar solo los pagos del usuario
+    this.pagoService.getPagosByUser(userId).subscribe((pagos: Pago[]) => {
       this.pagos = pagos;
       this.extractCategorias();
       this.applyFilters();

@@ -5,22 +5,6 @@
       <p>Inicia sesión en tu cuenta</p>
     </div>
 
-    <!-- Quick Access Buttons -->
-    <div class="quick-access">
-      <button type="button" class="quick-btn admin-btn" (click)="loginAsAdmin()">
-        <span class="btn-icon">👩‍💼</span>
-        <span class="btn-text">Entrar como Administrador</span>
-      </button>
-      <button type="button" class="quick-btn cliente-btn" (click)="showClienteLogin()">
-        <span class="btn-icon">👤</span>
-        <span class="btn-text">Entrar como Cliente</span>
-      </button>
-    </div>
-
-    <div class="divider">
-      <span>O ingresa tus credenciales</span>
-    </div>
-
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="email">Correo Electrónico</label>
@@ -56,11 +40,6 @@
 
     <div class="login-footer">
       <p>¿No tienes cuenta? <a routerLink="/register">Regístrate aquí</a></p>
-    </div>
-
-    <!-- Admin Info Badge -->
-    <div class="admin-info">
-      <small>👩‍💼 Cuenta de administrador predefinida disponible</small>
     </div>
   </div>
 </div>

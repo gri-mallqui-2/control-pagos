@@ -20,20 +20,6 @@ Aplicación web desarrollada en Angular para gestionar y controlar pagos persona
 - Angular CLI (versión 18 o superior)
 - Cuenta de Firebase
 
-## 🔧 Instalación y Configuración
-
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/ivansoriasolis/control-pagos.git
-cd control-pagos
-```
-
-### 2. Instalar dependencias
-
-```bash
-npm install
-```
 
 ### 3. Configurar Firebase
 
@@ -41,14 +27,6 @@ npm install
 2. Habilitar **Authentication** (Email/Password)
 3. Crear una base de datos **Firestore**
 4. Copiar la configuración de Firebase en `src/app/app.config.ts`
-
-### 4. Ejecutar la aplicación
-
-```bash
-npm start
-# o
-ng serve
-```
 
 La aplicación estará disponible en `http://localhost:4200/`
 
@@ -96,19 +74,6 @@ Los archivos compilados estarán en el directorio `dist/`
   - `updateCategoria()` - Actualizar categoría
   - `deleteCategoria()` - Eliminar categoría
 
-### Guards
-
-- **authGuard** - Protege rutas que requieren autenticación
-- **loginGuard** - Previene acceso a login/register si ya está autenticado
-
-### Pipes Personalizados
-
-- **CurrencySolPipe** - Formatea números como moneda peruana (S/)
-
-### Directivas
-
-- Directivas estructurales: `*ngFor`, `*ngIf`
-- Directivas atributivas: `ngClass`, `ngStyle`, `routerLinkActive`
 
 ## 🌐 Deployment
 
@@ -116,15 +81,6 @@ Los archivos compilados estarán en el directorio `dist/`
 
 🔗 **[https://control-pagos-9baed.web.app](https://control-pagos-9baed.web.app)**
 
-### Comandos de Deployment
-
-```bash
-# Compilar para producción
-ng build --configuration production
-
-# Desplegar a Firebase Hosting
-firebase deploy
-```
 
 ## 🎥 Video Demostrativo
 
@@ -236,16 +192,3 @@ El video incluye:
 ✅ Pipes personalizados  
 ✅ Arquitectura Standalone Components  
 ✅ Integración completa con Firebase  
-
-## 👨‍💻 Autor
-
-**[Tu Nombre]**  
-Proyecto desarrollado como parte del curso de Desarrollo Web Avanzado
-
-## 📄 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
----
-
-**Última actualización**: Diciembre 2025

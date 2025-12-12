@@ -8,10 +8,6 @@ import { PagoDetailComponent } from './pago-detail/pago-detail.component';
 import { CategoriasListComponent } from './categorias-list/categorias-list.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
-import { adminGuard } from './guards/admin.guard';
-import { AdminDashboard } from './admin/admin-dashboard/admin-dashboard';
-import { UserManagement } from './admin/user-management/user-management';
-import { ClienteDashboard } from './cliente/cliente-dashboard/cliente-dashboard';
 
 export const routes: Routes = [
   // Ruta por defecto - Redirecciona al dashboard
@@ -44,79 +40,28 @@ export const routes: Routes = [
     path: 'dashboard',
     component: DashboardComponent,
     canActivate: [authGuard],
-    title: 'Panel Principal'
+    title: 'Mi Panel de Control'
   },
 
   // ========================================
-  // RUTAS DE ADMINISTRADOR (Solo admin)
+  // PERFIL DE USUARIO
   // ========================================
   {
-    path: 'admin',
-    canActivate: [authGuard, adminGuard],
-    children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-      {
-        path: 'dashboard',
-        component: AdminDashboard,
-        title: '📊 Panel de Administración'
-      },
-      {
-        path: 'users',
-        component: UserManagement,
-        title: '👥 Gestión de Usuarios'
-      },
-      {
-        path: 'client-files',
-        loadComponent: () => import('./admin/client-files/client-files.component')
-          .then(m => m.ClientFilesComponent),
-        title: '📁 Archivos de Clientes'
-      },
-      {
-        path: 'pagos',
-        component: PagosListComponent,
-        title: '💳 Todos los Pagos'
-      }
-    ]
-  },
-
-  // ========================================
-  // RUTAS DE CLIENTE
-  // ========================================
-  {
-    path: 'cliente',
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.component')
+      .then(m => m.ProfileComponent),
     canActivate: [authGuard],
-    children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-      {
-        path: 'dashboard',
-        component: ClienteDashboard,
-        title: '👤 Mi Panel'
-      },
-      {
-        path: 'profile',
-        loadComponent: () => import('./cliente/cliente-profile/cliente-profile')
-          .then(m => m.ClienteProfile),
-        title: '👤 Mi Perfil'
-      }
-    ]
+    title: '👤 Mi Perfil'
   },
 
   // ========================================
-  // GESTIÓN DE PAGOS (Accesible para todos los usuarios autenticados)
+  // GESTIÓN DE PAGOS
   // ========================================
   {
     path: 'pagos',
     component: PagosListComponent,
     canActivate: [authGuard],
-    title: 'Lista de Pagos'
+    title: 'Mis Pagos'
   },
   {
     path: 'pago/nuevo',
@@ -138,24 +83,24 @@ export const routes: Routes = [
   },
 
   // ========================================
-  // GESTIÓN DE CATEGORÍAS (Solo admin puede editar)
+  // GESTIÓN DE CATEGORÍAS
   // ========================================
   {
     path: 'categorias',
     component: CategoriasListComponent,
     canActivate: [authGuard],
-    title: 'Categorías'
+    title: 'Mis Categorías'
   },
 
   // ========================================
-  // ESTADÍSTICAS (Lazy Loading)
+  // ESTADÍSTICAS
   // ========================================
   {
     path: 'estadisticas',
     loadComponent: () => import('./estadisticas/estadisticas.component')
       .then(m => m.EstadisticasComponent),
     canActivate: [authGuard],
-    title: 'Estadísticas'
+    title: 'Mis Estadísticas'
   },
 
   // ========================================

@@ -65,51 +65,19 @@ export class EstadisticasComponent implements OnInit {
   loadPagos(userId: string) {
     console.log('🔵 Estadisticas: Fetching pagos for userId:', userId);
 
-    // Obtener información del usuario para verificar su rol
-    this.userService.getUserById(userId).subscribe({
-      next: (user) => {
-        console.log('🔵 Estadisticas: User data:', user);
-        const isAdmin = user?.role === 'admin';
-        console.log('🔵 Estadisticas: Is admin?', isAdmin);
+    // Cargar solo los pagos del usuario
+    console.log('🔵 Estadisticas: Loading user pagos');
+    this.pagoService.getPagosByUser(userId).subscribe({
+      next: (pagos: Pago[]) => {
+        console.log('✅ Estadisticas: User pagos loaded:', pagos.length, 'pagos');
+        console.log('📊 Estadisticas: Pagos data:', pagos);
 
-        if (isAdmin) {
-          // Admin: cargar TODOS los pagos
-          console.log('🔵 Estadisticas: Loading ALL pagos (admin mode)');
-          this.pagoService.getAllPagos().subscribe({
-            next: (pagos) => {
-              console.log('✅ Estadisticas: All pagos loaded:', pagos.length, 'pagos');
-              console.log('📊 Estadisticas: Pagos data:', pagos);
-
-              this.pagos = pagos;
-              this.calculateStatistics();
-              this.loading = false;
-            },
-            error: (error) => {
-              console.error('❌ Estadisticas: Error loading all pagos:', error);
-              this.loading = false;
-            }
-          });
-        } else {
-          // Cliente: cargar solo sus pagos
-          console.log('🔵 Estadisticas: Loading user pagos (client mode)');
-          this.pagoService.getPagosByUser(userId).subscribe({
-            next: (pagos) => {
-              console.log('✅ Estadisticas: User pagos loaded:', pagos.length, 'pagos');
-              console.log('📊 Estadisticas: Pagos data:', pagos);
-
-              this.pagos = pagos;
-              this.calculateStatistics();
-              this.loading = false;
-            },
-            error: (error) => {
-              console.error('❌ Estadisticas: Error loading user pagos:', error);
-              this.loading = false;
-            }
-          });
-        }
+        this.pagos = pagos;
+        this.calculateStatistics();
+        this.loading = false;
       },
-      error: (error) => {
-        console.error('❌ Estadisticas: Error getting user data:', error);
+      error: (error: any) => {
+        console.error('❌ Estadisticas: Error loading user pagos:', error);
         this.loading = false;
       }
     });

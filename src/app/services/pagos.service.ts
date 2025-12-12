@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -44,11 +44,22 @@ export class PagoService {
     );
   }
 
-  // Obtener todos los pagos (solo para admin)
-  getAllPagos(): Observable<Pago[]> {
-    return collectionData(this.pagosCollection, { idField: 'id' }) as Observable<Pago[]>;
-  }
+  // Obtener solo los pagos recientes de un usuario (optimizado para dashboard)
+  getRecentPagosByUser(userId: string, limitCount: number = 5): Observable<Pago[]> {
+    const q = query(
+      this.pagosCollection,
+      where('userId', '==', userId),
+      orderBy('fecha', 'desc'),
+      limit(limitCount)
+    );
 
+    return (collectionData(q, { idField: 'id' }) as Observable<Pago[]>).pipe(
+      catchError((error) => {
+        console.error('❌ PagoService: Error fetching recent pagos:', error);
+        return of([]);
+      })
+    );
+  }
 
   // Obtener un pago por ID
   getPagoById(id: string): Observable<Pago> {

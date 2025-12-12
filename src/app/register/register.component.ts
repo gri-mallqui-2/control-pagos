@@ -85,11 +85,10 @@ export class RegisterComponent {
         // Registrar usuario en Firebase Auth
         const userCredential = await this.authService.register(email, password);
 
-        // Crear documento de usuario en Firestore con rol 'cliente' y datos adicionales
+        // Crear documento de usuario en Firestore con datos adicionales
         await this.userService.createUser(
           userCredential.user.uid,
           email,
-          'cliente',
           {
             dni,
             firstName,
