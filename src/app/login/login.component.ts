@@ -38,7 +38,54 @@ export class LoginComponent implements OnInit {
     return this.loginForm.get('password');
   }
 
+  async loginWithGoogle() {
+    this.loading = true;
+    this.errorMessage = '';
 
+    try {
+      const result = await this.authService.loginWithGoogle();
+      const user = result.user;
+
+      // Verificar si el usuario ya existe en Firestore
+      this.userService.getUserById(user.uid).pipe(
+        take(1)
+      ).subscribe({
+        next: async (existingUser) => {
+          if (!existingUser) {
+            // Crear documento de usuario con datos de Google
+            await this.userService.createUser(
+              user.uid,
+              user.email || '',
+              {
+                firstName: user.displayName?.split(' ')[0] || '',
+                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+              }
+            );
+          }
+
+          // Redirigir al dashboard
+          this.loading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          console.error('Error checking user:', error);
+          this.loading = false;
+          this.errorMessage = 'Error al verificar usuario';
+        }
+      });
+    } catch (error: any) {
+      this.loading = false;
+      console.error('Error with Google login:', error);
+
+      if (error.code === 'auth/popup-closed-by-user') {
+        this.errorMessage = 'Inicio de sesión cancelado';
+      } else if (error.code === 'auth/popup-blocked') {
+        this.errorMessage = 'Popup bloqueado. Permite popups para este sitio';
+      } else {
+        this.errorMessage = 'Error al iniciar sesión con Google';
+      }
+    }
+  }
 
   async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {

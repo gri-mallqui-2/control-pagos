@@ -2,16 +2,22 @@
   <div class="register-card">
     <div class="register-header">
       <h1>✨ Crear Cuenta</h1>
-      <p>Regístrate como cliente</p>
+      <p>Regístrate para gestionar tus pagos personales</p>
     </div>
 
-    <!-- Info Badge -->
-    <div class="info-badge">
-      <span class="badge-icon">👤</span>
-      <span class="badge-text">Serás registrado como <strong>Cliente</strong></span>
+    <!-- Active Session Warning -->
+    <div *ngIf="hasActiveSession" class="warning-badge">
+      <span class="badge-icon">⚠️</span>
+      <div class="warning-content">
+        <p><strong>Sesión activa detectada</strong></p>
+        <p>Debes cerrar tu sesión actual para registrar una nueva cuenta</p>
+        <button type="button" class="btn-logout-warning" (click)="logoutAndContinue()">
+          🚪 Cerrar Sesión y Continuar
+        </button>
+      </div>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" [class.disabled-form]="hasActiveSession">
       <div class="form-group">
         <label for="email">Correo Electrónico</label>
         <input type="email" id="email" formControlName="email" class="form-control"
@@ -103,7 +109,7 @@
 
     <!-- Benefits Section -->
     <div class="benefits-section">
-      <h3>Como cliente podrás:</h3>
+      <h3>Con tu cuenta podrás:</h3>
       <ul>
         <li>✅ Crear y gestionar tus pagos</li>
         <li>✅ Ver tu historial personal</li>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -12,7 +12,7 @@ import { UserService } from '../services/user.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private userService = inject(UserService);
@@ -22,6 +22,7 @@ export class RegisterComponent {
   errorMessage: string = '';
   successMessage: string = '';
   loading: boolean = false;
+  hasActiveSession: boolean = false;
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -33,6 +34,22 @@ export class RegisterComponent {
       lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       phone: ['', [Validators.pattern(/^\d{9}$/)]]
     }, { validators: this.passwordMatchValidator });
+  }
+
+  ngOnInit() {
+    // Verificar si hay una sesión activa
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.hasActiveSession = true;
+      this.errorMessage = 'Ya tienes una sesión activa. Cierra sesión para registrar una nueva cuenta.';
+    }
+  }
+
+  logoutAndContinue() {
+    this.authService.logout().then(() => {
+      this.hasActiveSession = false;
+      this.errorMessage = '';
+    });
   }
 
   passwordMatchValidator(form: FormGroup) {
