@@ -54,6 +54,21 @@
     animation: pulse 2s ease-in-out infinite;
 }
 
+.user-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.user-avatar-img:hover {
+    transform: scale(1.1);
+    border-color: white;
+}
+
 @keyframes pulse {
 
     0%,

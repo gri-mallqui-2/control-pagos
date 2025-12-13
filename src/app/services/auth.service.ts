@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private auth = inject(Auth);
+  public auth = inject(Auth);
   currentUser: User | null = null;
 
   constructor() {

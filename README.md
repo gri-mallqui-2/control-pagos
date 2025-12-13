@@ -13,13 +13,34 @@ Aplicación web desarrollada en Angular para gestionar y controlar pagos persona
 - **CSS3** - Estilos personalizados y diseño responsivo
 - **Firebase Hosting** - Despliegue en la nube
 
-## 📋 Requisitos Previos
+## � Enlaces del Proyecto
+
+- 🌐 **Aplicación en Vivo**: [https://control-pagos-9baed.web.app](https://control-pagos-9baed.web.app)
+- 🔥 **Firebase Console**: [https://console.firebase.google.com/project/control-pagos-9baed](https://console.firebase.google.com/project/control-pagos-9baed)
+- 💻 **Repositorio GitHub**: [https://github.com/gri-mallqui-2/control-pagos](https://github.com/gri-mallqui-2/control-pagos)
+- 🎥 **Video Demo**: [Ver en Google Drive](https://drive.google.com/file/d/1kOBjQ6Y3Woc0dsQQSwibRrneOViprWRr/view?usp=drive_link)
+
+## �📋 Requisitos Previos
 
 - Node.js (versión 18 o superior)
 - npm (versión 9 o superior)
 - Angular CLI (versión 18 o superior)
 - Cuenta de Firebase
 
+## 🚀 Instalación y Configuración
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/gri-mallqui-2/control-pagos.git
+cd control-pagos
+```
+
+### 2. Instalar dependencias
+
+```bash
+npm install
+```
 
 ### 3. Configurar Firebase
 
@@ -28,12 +49,20 @@ Aplicación web desarrollada en Angular para gestionar y controlar pagos persona
 3. Crear una base de datos **Firestore**
 4. Copiar la configuración de Firebase en `src/app/app.config.ts`
 
-La aplicación estará disponible en `http://localhost:4200/`
+### 4. Ejecutar en desarrollo
+
+```bash
+npm start
+```
+
+La aplicación estará disponible en:
+- `http://localhost:4200/` (puerto por defecto)
+- `http://localhost:58027/` (puerto alternativo)
 
 ### 5. Compilar para producción
 
 ```bash
-ng build
+npm run build
 ```
 
 Los archivos compilados estarán en el directorio `dist/`
@@ -77,14 +106,16 @@ Los archivos compilados estarán en el directorio `dist/`
 
 ## 🌐 Deployment
 
-### URL de Firebase Hosting
+### Aplicación en Vivo
 
 🔗 **[https://control-pagos-9baed.web.app](https://control-pagos-9baed.web.app)**
+
+La aplicación está desplegada en Firebase Hosting y es accesible desde cualquier dispositivo y red.
 
 
 ## 🎥 Video Demostrativo
 
-📹 **URL del Video**: [Pendiente de subir]
+📹 **[Ver Video en Google Drive](https://drive.google.com/file/d/1kOBjQ6Y3Woc0dsQQSwibRrneOViprWRr/view?usp=drive_link)**
 
 El video incluye:
 - Demostración de funcionalidades principales
@@ -92,7 +123,8 @@ El video incluye:
 - Operaciones CRUD (crear, leer, actualizar, eliminar pagos)
 - Filtros y búsqueda en tiempo real
 - Vista de estadísticas
-- Explicación del código (componentes, servicios, guards)
+- Gestión de categorías
+- Interfaz de usuario y navegación
 
 ## 📖 Manual de Usuario
 

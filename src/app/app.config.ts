@@ -22,5 +22,6 @@ export const appConfig: ApplicationConfig = {
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore())
+    // Firebase Storage removido - usando Cloudinary para imágenes
   ]
 };

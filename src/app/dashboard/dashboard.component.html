@@ -2,7 +2,8 @@
   <!-- Header with user info and logout -->
   <div class="top-bar">
     <span class="user-email">
-      <span class="user-avatar">👨‍💼</span>
+      <img *ngIf="currentUser?.photoURL" [src]="currentUser?.photoURL" alt="Foto de perfil" class="user-avatar-img">
+      <span *ngIf="!currentUser?.photoURL" class="user-avatar">👨‍💼</span>
       {{ currentUser?.email }}
     </span>
     <button class="btn-logout" (click)="logout()">

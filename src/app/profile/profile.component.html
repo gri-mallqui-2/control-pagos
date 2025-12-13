@@ -6,7 +6,19 @@
         <h1>👤 Mi Perfil</h1>
     </div>
 
-    <div class="profile-content">
+    <!-- Loading State -->
+    <div *ngIf="!currentUser && !errorMessage" class="loading-state">
+        <p>⏳ Cargando datos del perfil...</p>
+    </div>
+
+    <!-- Debug Info (remove in production) -->
+    <div *ngIf="currentUser" class="debug-info"
+        style="background: #f0f0f0; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
+        <p><strong>Usuario cargado:</strong> {{ currentUser.email }}</p>
+        <p><strong>UID:</strong> {{ currentUser.uid }}</p>
+    </div>
+
+    <div class="profile-content" *ngIf="currentUser">
         <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
             <!-- Mensajes de éxito/error -->
             <div *ngIf="successMessage" class="alert alert-success">
@@ -14,6 +26,53 @@
             </div>
             <div *ngIf="errorMessage" class="alert alert-error">
                 {{ errorMessage }}
+            </div>
+
+            <!-- Photo Upload Section -->
+            <div class="form-section photo-section">
+                <h2>📸 Foto de Perfil</h2>
+
+                <div class="photo-upload-container">
+                    <!-- Current Photo or Preview -->
+                    <div class="photo-display">
+                        <img *ngIf="photoPreview || currentUser?.photoURL" [src]="photoPreview || currentUser.photoURL"
+                            alt="Foto de perfil" class="profile-photo">
+                        <div *ngIf="!photoPreview && !currentUser?.photoURL" class="photo-placeholder">
+                            <span class="placeholder-icon">👤</span>
+                            <p>Sin foto</p>
+                        </div>
+                    </div>
+
+                    <!-- Upload Controls -->
+                    <div class="photo-controls">
+                        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*"
+                            style="display: none">
+
+                        <button type="button" class="btn btn-upload" (click)="fileInput.click()" [disabled]="uploading">
+                            📁 Seleccionar Foto
+                        </button>
+
+                        <button type="button" *ngIf="selectedFile && !uploading" class="btn btn-primary"
+                            (click)="uploadPhoto()">
+                            ⬆️ Subir Foto
+                        </button>
+
+                        <button type="button" *ngIf="photoPreview && !uploading" class="btn btn-secondary"
+                            (click)="removePhoto()">
+                            ❌ Cancelar
+                        </button>
+
+                        <!-- Upload Progress -->
+                        <div *ngIf="uploading" class="upload-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+                            </div>
+                            <p class="progress-text">{{ uploadProgress | number:'1.0-0' }}%</p>
+                        </div>
+
+                        <small class="form-text">Formatos: JPG, PNG, GIF. Máximo 5MB</small>
+                    </div>
+                </div>
             </div>
 
             <!-- Información de cuenta -->
